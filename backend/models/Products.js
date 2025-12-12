@@ -121,6 +121,10 @@ const Products = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+        outsource_link: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     deleted_at: {
       type: DataTypes.DATE,
       allowNull: true,

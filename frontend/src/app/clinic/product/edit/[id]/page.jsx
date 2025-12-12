@@ -60,6 +60,7 @@ export default function AddProductForm() {
     whenToResume: "",
     frequency: "",
     intakeMode: "",
+    outsource_link: "",
   });
 
   const [timings, setTimings] = useState([""]);
@@ -152,6 +153,7 @@ export default function AddProductForm() {
           whenToResume: data.time_option || "",
           frequency: data.frequency || "",
           intakeMode: data.intake_mode || "",
+          outsource_link: data.outsource_link || "",
         }));
 
         setSelectedCategories((data.service_categories || []).map((c) => ({ value: c.id, label: c.title })));
@@ -253,7 +255,7 @@ export default function AddProductForm() {
             <h4 className="fw-medium mb-3">{productId ? "Edit Product" : "Add Product"}</h4>
             <div className="row">
               {/* Product Name */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label">
                   Product Name <span className="text-danger">*</span>
                 </label>
@@ -269,7 +271,7 @@ export default function AddProductForm() {
               </div>
 
               {/* Categories */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label">
                   Product Category <span className="text-danger">*</span>
                 </label>
@@ -284,7 +286,7 @@ export default function AddProductForm() {
               </div>
 
               {/* Brand */}
-              <div className="col-md-6 mb-3">
+              <div className="col-md-4 mb-3">
                 <label className="form-label">Brand Name</label>
                 <input
                   type="text"
@@ -349,6 +351,21 @@ export default function AddProductForm() {
                   onChange={setSelectedDosage}
                   placeholder="Select Dosage"
                   isClearable
+                  required
+                />
+              </div>
+
+                      <div className="col-md-6 mb-3">
+                <label className="form-label">
+                  Product Outsource Link  
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="outsource_link"
+                  value={formData.outsource_link}
+                  onChange={handleChange}
+                  placeholder="Enter Outsource Link"
                   required
                 />
               </div>

@@ -51,6 +51,7 @@ exports.SaveOrUpdateProduct = async (req, res) => {
       treatments,
       price,
       sale_price,
+      outsource_link,
       clinic_id, // Make sure this is passed or derived from token/session
     } = req.body;
 
@@ -111,6 +112,7 @@ exports.SaveOrUpdateProduct = async (req, res) => {
       treatments,
       price,
       sale_price,
+      outsource_link,
     };
 
     let product;
