@@ -1342,8 +1342,7 @@ exports.SaveOrUpdateClientByStaff = async (req, res) => {
     if (!full_name) return res.status(400).json({ status: false, message: "Full Name is required." });
     if (!phone) return res.status(400).json({ status: false, message: "Phone Number is required." });
     if (!email) return res.status(400).json({ status: false, message: "Email Address is required." });
-    if (!dob) return res.status(400).json({ status: false, message: "Date of Birth is required." });
-    if (!gender) return res.status(400).json({ status: false, message: "Gender is required." });
+
 
     // ✅ Step 2: Find clinic (the staff’s creator)
     const staff = await User.findOne({
@@ -1407,16 +1406,6 @@ exports.SaveOrUpdateClientByStaff = async (req, res) => {
       updated_at: new Date(),
     });
 
-    // ✅ Step 7: Setup mail transporter
-    // const transporter = nodemailer.createTransport({
-    //   host: process.env.MAIL_HOST,
-    //   port: process.env.MAIL_PORT,
-    //   secure: false,
-    //   auth: {
-    //     user: process.env.MAIL_USER,
-    //     pass: process.env.MAIL_PASS,
-    //   },
-    // });
 
     const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
