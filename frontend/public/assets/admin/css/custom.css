@@ -1,0 +1,127 @@
+.sidebar{
+  background-color:#c33c65;
+}
+.logo-header{
+  margin-top:5px;
+}
+
+.btn{
+  padding:10px !important
+}
+
+/* custom-bootstrap.css or global stylesheet */
+
+.btn-primary {
+  background-color: #c33c65  !important;
+  border-color: #c33c65  !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: #0a1733 !important;
+  border-color: #0a1733 !important;
+  color: #ffffff !important;
+}
+
+.text-primary {
+  color: #000 !important;
+}
+
+.bg-primary {
+  background-color: #1074bc !important;
+}
+
+.sidebar .nav-item ul{
+  background-color: #00000069 !important;
+}
+
+.sidebar .nav-item a{
+  color:#fff !important;
+}
+
+.sidebar .nav.nav-secondary > .nav-item a:hover i, .sidebar .nav.nav-secondary > .nav-item a:focus i,
+.sidebar .nav.nav-secondary > .nav-item a:hover p, .sidebar .nav.nav-secondary > .nav-item a:focus p {
+  color: #fff !important;
+}
+
+
+
+
+.card-title {
+    color: #1074bc !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.0 !important;
+}
+
+.react-datepicker-wrapper{
+  width:100%;
+}
+
+.areaTaskTable .task-item{
+  border:1px solid lightblue;
+  padding:8px;
+  margin-right:5px;
+  margin-bottom:5px;
+}
+
+.modal{
+  background:#00000094;
+}
+
+.react-datepicker__header {
+  background-color: #3e97ff !important;
+}
+
+.form-control{
+  border: 1px solid lightblue !important;
+}
+
+
+.react-tel-input .form-control {
+   width: 100% !important; 
+}
+
+.cleanerImgPreview{
+  height: auto; 
+  width: 20%;
+  border: 1px solid white; 
+  border-radius: 5px; 
+  objectFit: cover;
+  margin-top: 5px;
+}
+
+.rmdp-container{
+  width: 100% !important;
+}
+
+.rmdp-input {
+    border: 1px solid lightblue !important;
+    border-radius: 5px !important;
+    line-height: 1.5 !important;
+    margin: 1px 0 !important;
+    padding: 1.3rem 1rem !important;
+    width: 100% !important;
+}
+
+.siteQuoteTable{
+  line-height: 1.8;
+}
+
+.siteQuoteTable th,td{
+  padding:3px;
+}
+
+.signup-screen-wrap {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+
+
+
+
