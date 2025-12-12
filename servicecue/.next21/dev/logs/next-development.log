@@ -1,0 +1,34 @@
+[00:00:25.407] Server  LOG      ✓ Ready in 16.1s
+[00:00:39.531] Server  LOG      ○ Compiling / ...
+[00:00:47.059] Server  WARN     ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[00:01:14.959] Server  LOG      ✓ Compiled in 157ms
+[00:01:45.268] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+[00:01:45.268] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+[00:06:42.746] Server  LOG      ✓ Compiled in 158ms
+[00:07:02.452] Server  LOG      ✓ Compiled in 156ms
+[00:07:30.814] Server  LOG      ✓ Compiled in 217ms
+[00:08:38.950] Server  LOG      ✓ Compiled in 339ms
+[00:08:49.036] Server  LOG      ✓ Compiled in 147ms
+[00:09:04.948] Server  LOG      ✓ Compiled in 1082ms
+[00:09:09.682] Server  LOG      ✓ Compiled in 883ms
+[00:11:20.419] Server  LOG      ✓ Compiled in 445ms
+[00:11:24.700] Server  WARN     ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[00:11:30.254] Server  LOG      ✓ Compiled in 1595ms
+[00:11:32.169] Server  WARN     ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[00:12:21.591] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:13:11.583] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'slidesToShow')
+[00:13:21.938] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'slidesToShow')
+[00:13:51.951] Server  LOG      ✓ Compiled in 87ms
+[00:13:56.773] Server  WARN     ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[00:14:05.460] Server  LOG      ✓ Compiled in 127ms
+[00:14:06.445] Server  LOG      ✓ Compiled in 215ms
+[00:15:14.621] Server  LOG      ✓ Compiled in 64ms
+[00:15:31.519] Server  WARN     ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+[00:15:49.250] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'slidesToShow')
+[00:19:44.844] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'slidesToShow')
+[00:19:53.545] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'slidesToShow')
+[00:24:53.999] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'getSlick')
+[00:26:08.334] Browser ERROR   uncaughtError: TypeError: Cannot read properties of undefined (reading 'getSlick')
+[00:34:20.224] Server  LOG      ✓ Compiled in 43ms
+[00:35:19.106] Server  LOG      ✓ Compiled in 63ms
+[00:36:20.656] Server  WARN     ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase

@@ -1,0 +1,12 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/about/page": "/about",
+  "/blog/page": "/blog",
+  "/faqs/page": "/faqs",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/",
+  "/pricing/page": "/pricing",
+  "/treatment-planning/page": "/treatment-planning",
+  "/why-client-care-must-come-first/page": "/why-client-care-must-come-first"
+}

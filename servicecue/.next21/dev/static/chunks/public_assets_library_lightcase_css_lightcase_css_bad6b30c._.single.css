@@ -1,0 +1,408 @@
+/* [project]/public/assets/library/lightcase/css/lightcase.css [app-client] (css) */
+@font-face {
+  font-family: lightcase;
+  src: url("../media/lightcase.86c274fd.eot");
+  src: url("../media/lightcase.86c274fd.eot") format("embedded-opentype"), url("../media/lightcase.874cceb1.woff") format("woff"), url("../media/lightcase.ff37c59f.ttf") format("truetype"), url("../media/lightcase.e7a82e6c.svg") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class*="lightcase-icon-"]:before {
+  speak: none;
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
+  text-align: center;
+  font-variant: normal;
+  text-transform: none;
+  width: 1em;
+  font-family: lightcase, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1em;
+  display: inline-block;
+}
+
+.lightcase-icon-play:before {
+  content: "";
+}
+
+.lightcase-icon-pause:before {
+  content: "";
+}
+
+.lightcase-icon-close:before {
+  content: "";
+}
+
+.lightcase-icon-prev:before {
+  content: "";
+}
+
+.lightcase-icon-next:before {
+  content: "";
+}
+
+.lightcase-icon-spin:before {
+  content: "";
+}
+
+@keyframes lightcase-spin {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(359deg);
+  }
+}
+
+#lightcase-case {
+  z-index: 2002;
+  text-align: left;
+  text-shadow: 0 0 10px #00000080;
+  font-family: arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+}
+
+@media screen and (max-width: 640px) {
+  html[data-lc-type="inline"] #lightcase-case, html[data-lc-type="ajax"] #lightcase-case {
+    padding: 55px 0 70px;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    position: fixed !important;
+    inset: 0 !important;
+    overflow: auto !important;
+  }
+}
+
+@media screen and (min-width: 641px) {
+  html:not([data-lc-type="error"]) #lightcase-content {
+    z-index: 1;
+    text-shadow: none;
+    -o-box-shadow: 0 0 30px #00000080;
+    -webkit-backface-visibility: hidden;
+    background-color: #fff;
+    position: relative;
+    box-shadow: 0 0 30px #00000080;
+  }
+
+  html[data-lc-type="image"] #lightcase-content, html[data-lc-type="video"] #lightcase-content {
+    background-color: #333;
+  }
+}
+
+html[data-lc-type="inline"] #lightcase-content, html[data-lc-type="ajax"] #lightcase-content, html[data-lc-type="error"] #lightcase-content {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  -o-box-shadow: none;
+  box-shadow: none;
+}
+
+@media screen and (max-width: 640px) {
+  html[data-lc-type="inline"] #lightcase-content, html[data-lc-type="ajax"] #lightcase-content, html[data-lc-type="error"] #lightcase-content {
+    background: none !important;
+    border: none !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+  }
+}
+
+html[data-lc-type="inline"] #lightcase-content .lightcase-contentInner, html[data-lc-type="ajax"] #lightcase-content .lightcase-contentInner, html[data-lc-type="error"] #lightcase-content .lightcase-contentInner {
+  box-sizing: border-box;
+  -o-box-sizing: border-box;
+}
+
+@media screen and (max-width: 640px) {
+  html[data-lc-type="inline"] #lightcase-content .lightcase-contentInner, html[data-lc-type="ajax"] #lightcase-content .lightcase-contentInner, html[data-lc-type="error"] #lightcase-content .lightcase-contentInner {
+    padding: 15px;
+  }
+
+  html[data-lc-type="inline"] #lightcase-content .lightcase-contentInner, html[data-lc-type="inline"] #lightcase-content .lightcase-contentInner > *, html[data-lc-type="ajax"] #lightcase-content .lightcase-contentInner, html[data-lc-type="ajax"] #lightcase-content .lightcase-contentInner > *, html[data-lc-type="error"] #lightcase-content .lightcase-contentInner, html[data-lc-type="error"] #lightcase-content .lightcase-contentInner > * {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  html[data-lc-type="inline"] #lightcase-content .lightcase-contentInner > :not(iframe), html[data-lc-type="ajax"] #lightcase-content .lightcase-contentInner > :not(iframe), html[data-lc-type="error"] #lightcase-content .lightcase-contentInner > :not(iframe) {
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  html.lightcase-isMobileDevice[data-lc-type="iframe"] #lightcase-content .lightcase-contentInner iframe {
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+}
+
+@media screen and (max-width: 640px) and (min-width: 641px) {
+  html[data-lc-type="image"] #lightcase-content .lightcase-contentInner, html[data-lc-type="video"] #lightcase-content .lightcase-contentInner {
+    line-height: .75;
+  }
+}
+
+html[data-lc-type="image"] #lightcase-content .lightcase-contentInner {
+  position: relative;
+  overflow: hidden !important;
+}
+
+@media screen and (max-width: 640px) {
+  html[data-lc-type="inline"] #lightcase-content .lightcase-contentInner .lightcase-inlineWrap, html[data-lc-type="ajax"] #lightcase-content .lightcase-contentInner .lightcase-inlineWrap, html[data-lc-type="error"] #lightcase-content .lightcase-contentInner .lightcase-inlineWrap {
+    background: none !important;
+    border: none !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+  }
+}
+
+@media screen and (min-width: 641px) {
+  html:not([data-lc-type="error"]) #lightcase-content .lightcase-contentInner .lightcase-inlineWrap {
+    box-sizing: border-box;
+    -o-box-sizing: border-box;
+    padding: 30px;
+    overflow: auto;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  #lightcase-content h1, #lightcase-content h2, #lightcase-content h3, #lightcase-content h4, #lightcase-content h5, #lightcase-content h6, #lightcase-content p {
+    color: #aaa;
+  }
+}
+
+@media screen and (min-width: 641px) {
+  #lightcase-content h1, #lightcase-content h2, #lightcase-content h3, #lightcase-content h4, #lightcase-content h5, #lightcase-content h6, #lightcase-content p {
+    color: #333;
+  }
+}
+
+#lightcase-case p.lightcase-error {
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #aaa;
+  margin: 0;
+  font-size: 17px;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 640px) {
+  #lightcase-case p.lightcase-error {
+    padding: 30px 0;
+  }
+}
+
+@media screen and (min-width: 641px) {
+  #lightcase-case p.lightcase-error {
+    padding: 0;
+  }
+}
+
+.lightcase-open body {
+  overflow: hidden;
+}
+
+.lightcase-isMobileDevice .lightcase-open body {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#lightcase-info {
+  padding-top: 15px;
+  position: absolute;
+}
+
+#lightcase-info #lightcase-title, #lightcase-info #lightcase-caption {
+  text-overflow: ellipsis;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+  line-height: 1.5;
+}
+
+#lightcase-info #lightcase-title {
+  color: #aaa;
+  font-size: 17px;
+}
+
+@media screen and (max-width: 640px) {
+  #lightcase-info #lightcase-title {
+    background: #333;
+    max-width: 87.5%;
+    padding: 5px 15px;
+    position: fixed;
+    top: 10px;
+    left: 0;
+  }
+}
+
+#lightcase-info #lightcase-caption {
+  clear: both;
+  color: #aaa;
+  font-size: 13px;
+}
+
+#lightcase-info #lightcase-sequenceInfo {
+  color: #aaa;
+  font-size: 11px;
+}
+
+@media screen and (max-width: 640px) {
+  .lightcase-fullScreenMode #lightcase-info {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  html:not([data-lc-type="image"]):not([data-lc-type="video"]):not([data-lc-type="flash"]):not([data-lc-type="error"]) #lightcase-info {
+    position: static;
+  }
+}
+
+#lightcase-loading {
+  z-index: 9999;
+  text-align: center;
+  width: 1.123em;
+  height: auto;
+  text-shadow: 0 0 15px #fff;
+  z-index: 2001;
+  opacity: 1;
+  -moz-transform-origin: 50% 53%;
+  margin-top: -.5em;
+  margin-left: -.5em;
+  font-size: 32px;
+  line-height: 1;
+  animation: .5s linear infinite lightcase-spin;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+}
+
+#lightcase-loading, #lightcase-loading:focus {
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+  -o-transition: color, opacity, ease-in-out .25s;
+  text-decoration: none;
+  transition: color, opacity, all .25s ease-in-out;
+}
+
+#lightcase-loading > span {
+  text-indent: -9999px;
+  display: inline-block;
+}
+
+a[class*="lightcase-icon-"] {
+  z-index: 9999;
+  text-align: center;
+  width: 1.123em;
+  height: auto;
+  text-shadow: none;
+  cursor: pointer;
+  outline: none;
+  font-size: 38px;
+  line-height: 1;
+  position: fixed;
+}
+
+a[class*="lightcase-icon-"], a[class*="lightcase-icon-"]:focus {
+  color: #fff9;
+  -webkit-tap-highlight-color: transparent;
+  -o-transition: color, opacity, ease-in-out .25s;
+  text-decoration: none;
+  transition: color, opacity, all .25s ease-in-out;
+}
+
+a[class*="lightcase-icon-"] > span {
+  text-indent: -9999px;
+  display: inline-block;
+}
+
+a[class*="lightcase-icon-"]:hover {
+  color: #fff;
+  text-shadow: 0 0 15px #fff;
+}
+
+.lightcase-isMobileDevice a[class*="lightcase-icon-"]:hover {
+  color: #aaa;
+  text-shadow: none;
+}
+
+a[class*="lightcase-icon-"].lightcase-icon-close {
+  opacity: 0;
+  outline: none;
+  margin: 0;
+  position: fixed;
+  top: 15px;
+  bottom: auto;
+  right: 15px;
+}
+
+a[class*="lightcase-icon-"].lightcase-icon-prev {
+  left: 15px;
+}
+
+a[class*="lightcase-icon-"].lightcase-icon-next {
+  right: 15px;
+}
+
+a[class*="lightcase-icon-"].lightcase-icon-pause, a[class*="lightcase-icon-"].lightcase-icon-play {
+  margin-left: -.5em;
+  left: 50%;
+}
+
+@media screen and (min-width: 641px) {
+  a[class*="lightcase-icon-"].lightcase-icon-pause, a[class*="lightcase-icon-"].lightcase-icon-play {
+    opacity: 0;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  a[class*="lightcase-icon-"] {
+    font-size: 24px;
+    bottom: 15px;
+  }
+}
+
+@media screen and (min-width: 641px) {
+  a[class*="lightcase-icon-"] {
+    margin-bottom: -.5em;
+    bottom: 50%;
+  }
+
+  a[class*="lightcase-icon-"]:hover, #lightcase-case:hover ~ a[class*="lightcase-icon-"] {
+    opacity: 1;
+  }
+}
+
+#lightcase-overlay {
+  z-index: 2000;
+  background: #333;
+  width: 100%;
+  min-height: 100%;
+  display: none;
+  position: fixed;
+  top: -9999px;
+  bottom: -9999px;
+  left: 0;
+}
+
+@media screen and (max-width: 640px) {
+  #lightcase-overlay {
+    opacity: 1 !important;
+  }
+}
+
+/*# sourceMappingURL=public_assets_library_lightcase_css_lightcase_css_bad6b30c._.single.css.map*/
