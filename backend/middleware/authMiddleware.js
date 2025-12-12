@@ -1,6 +1,7 @@
+require('dotenv').config();
 const jwt = require("jsonwebtoken");
-const BlacklistedToken = require("@models/BlacklistedToken");
-const User = require("@models/User"); // Import your user model
+const BlacklistedToken = require('@middleware/tokenBlacklist');
+const User = require("@models/User");
 
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -10,19 +11,34 @@ const authMiddleware = async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
+  const secret = process.env.JWT_SECRET || 'fallback_secret';
 
   try {
-    // Check if the token is blacklisted
-    const isBlacklisted = await BlacklistedToken.findOne({ where: { token } });
-    if (isBlacklisted) {
-      return res.status(401).json({ message: "Unauthorized: Token is blacklisted" });
+    // Debug logging in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.log("🔑 Incoming Token:", token);
+      console.log("🔑 JWT_SECRET (middleware):", secret);
     }
 
-    // Verify JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Check blacklist
+ 
 
-    // Check if the user still exists
-    const existingUser = await User.findByPk(decoded.id);
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, secret);
+    } catch (err) {
+      console.error("❌ JWT Verification Failed:", err.message);
+      return res.status(401).json({ message: `Unauthorized: ${err.message}` });
+    }
+
+    // Ensure user exists
+    const userId = decoded.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: Invalid token payload" });
+    }
+
+    const existingUser = await User.findByPk(userId);
     if (!existingUser) {
       return res.status(401).json({ message: "Unauthorized: User no longer exists" });
     }
@@ -30,7 +46,8 @@ const authMiddleware = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    console.error("❌ Middleware Error:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

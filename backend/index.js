@@ -1,18 +1,19 @@
 require("module-alias/register");
 
 const db = require("@models");
+const StripeWebhookController = require("@controllers/StripeWebhookController");
 const express = require("express");
 const cors = require("cors");
 const apiRoutes = require("@routes/api");
-const StripeWebhookController = require("@controllers/StripeWebhookController");
 
 const app = express();
 
-
+// ✅ Enable CORS for Next.js frontend
 app.use(cors({
-   origin: "*",
-   credentials: true
+  origin: "*", // ❌ Removed leading space
+  credentials: true,
 }));
+
 
 app.post(
   "/stripe/webhook/handle",
@@ -20,6 +21,8 @@ app.post(
   StripeWebhookController.handleStripeWebhook
 );
 
+
+// ✅ Parse JSON and form data BEFORE routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -29,9 +32,9 @@ app.use("/uploads", express.static("uploads"));
 
 
 // ✅ Routes
-app.use("/", apiRoutes);
+app.use("/api", apiRoutes);
 
-const PORT = 3001;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
