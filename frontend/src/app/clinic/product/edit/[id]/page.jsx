@@ -255,7 +255,7 @@ export default function AddProductForm() {
             <h4 className="fw-medium mb-3">{productId ? "Edit Product" : "Add Product"}</h4>
             <div className="row">
               {/* Product Name */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">
                   Product Name <span className="text-danger">*</span>
                 </label>
@@ -271,7 +271,7 @@ export default function AddProductForm() {
               </div>
 
               {/* Categories */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">
                   Product Category <span className="text-danger">*</span>
                 </label>
@@ -286,7 +286,7 @@ export default function AddProductForm() {
               </div>
 
               {/* Brand */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">Brand Name</label>
                 <input
                   type="text"

@@ -179,6 +179,28 @@ export default function ProductDetails() {
                     </div>
                   </div>
 
+     <div className="col-md-12">
+  <div>
+    <h5>Product Outsource Link</h5>
+
+    {product.outsource_link ? (
+      <a
+        href={product.outsource_link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fs-14 text-primary text-truncate d-inline-block"
+        style={{ maxWidth: "100%" }}
+      >
+        {product.outsource_link}
+      </a>
+    ) : (
+      <h6 className="fs-14 mb-0">N/A</h6>
+    )}
+  </div>
+</div>
+
+
+
                   <h5>Product Description</h5>
                   <div className="m-2"
                     dangerouslySetInnerHTML={{ __html: product.description }}

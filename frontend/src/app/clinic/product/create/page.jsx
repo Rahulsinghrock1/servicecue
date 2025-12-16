@@ -283,13 +283,13 @@ export default function AddProductForm() {
             <h4 className="fw-medium mb-3">Product Information</h4>
             <div className="row">
               {/* Product Name */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">Product Name <span className="text-danger">*</span></label>
                 <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="Enter Product Name" required />
               </div>
 
               {/* Category */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">Product Category <span className="text-danger">*</span></label>
                 <Select
                   isMulti
@@ -302,7 +302,7 @@ export default function AddProductForm() {
               </div>
 
               {/* Brand */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">Brand Name</label>
                 <input type="text" className="form-control" name="brand" value={formData.brand} onChange={handleChange} placeholder="Enter Brand Name" />
               </div>
@@ -339,7 +339,7 @@ export default function AddProductForm() {
                 </div>
               </div>
 
-              {/* Dosage */}
+        
               <div className="col-md-6 mb-3">
                 <label className="form-label">Dosage <span className="text-danger">*</span></label>
                 <Select options={dosageOptions} value={selectedDosage} onChange={setSelectedDosage} placeholder="Select Dosage" isClearable required />
@@ -352,7 +352,7 @@ export default function AddProductForm() {
                 <div className="input-group">
                   <input type="text" className="form-control" name="outsource_link" value={formData.outsource_link} onChange={handleChange} placeholder="Enter Outsource Link"  />
                 </div>
-              </div>
+              </div> 
 
               {/* CKEditor fields */}
               {["description", "highlights", "usage", "ingredients"].map((field) => (

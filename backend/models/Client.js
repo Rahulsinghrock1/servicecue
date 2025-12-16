@@ -50,6 +50,10 @@ const Client = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+        visible_to_staff: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   },
   {
     tableName: "clients",

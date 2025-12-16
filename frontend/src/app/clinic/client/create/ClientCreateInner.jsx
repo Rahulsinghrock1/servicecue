@@ -38,6 +38,7 @@ const ClientCreate = () => {
     postcode: "",
     avatarUrl: "",
     assignedStaff: [],
+    visible_to_staff: false,
   });
 
   const [staffOptions, setStaffOptions] = useState([]);
@@ -152,6 +153,13 @@ const ClientCreate = () => {
         }
       }
     );
+  };
+
+ const handleCheckboxChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      visible_to_staff: e.target.checked,
+    }));
   };
 
   const handleSelectAddress = (description) => {
@@ -383,6 +391,20 @@ const ClientCreate = () => {
                 readOnly
               />
             </div>
+          </div>
+
+          {/* Visible to Staff */}
+          <div className="form-check mb-3">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              id="visibleToStaff"
+              checked={formData.visible_to_staff}
+              onChange={handleCheckboxChange}
+            />
+            <label className="form-check-label" htmlFor="visibleToStaff">
+              Visible to Staff
+            </label>
           </div>
 
           {/* Assign Staff */}

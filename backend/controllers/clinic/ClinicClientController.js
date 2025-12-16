@@ -132,273 +132,12 @@ exports.assignedStaffList = async (req, res) => {
   }
 };
 
-// Save or Update Client
-// exports.SaveOrUpdateClient = async (req, res) => {
-//   try {
-//     let {
-//       id,
-//       full_name,
-//       phone,
-//       email,
-//       dob,
-//       address,
-//       city,
-//       state,
-//       country,
-//       gender,
-//       postcode,
-//       clinic_id,
-//       assignedStaff,
-//     } = req.body;
-//     // 🔹 convert "1307,1285" → [1307,1285]
-//     if (typeof assignedStaff === "string") {
-//       assignedStaff = assignedStaff
-//         .split(",")
-//         .map((id) => parseInt(id, 10))
-//         .filter(Boolean);
-//     } else if (!Array.isArray(assignedStaff)) {
-//       assignedStaff = [];
-//     }
-//     // ✅ required fields validation
-//     if (!full_name) {
-//       return res.status(400).json({ status: false, message: "Full Name is required." });
-//     }
-//     if (!phone) {
-//       return res.status(400).json({ status: false, message: "Phone Number is required." });
-//     }
-//     if (!email) {
-//       return res.status(400).json({ status: false, message: "Email Address is required." });
-//     }
-//     if (!dob) {
-//       return res.status(400).json({ status: false, message: "Date of Birth is required." });
-//     }
-//     if (!gender) {
-//       return res.status(400).json({ status: false, message: "Gender is required." });
-//     }
-//     const type = 2;
-//     const avatar = req.files?.avatar?.[0]?.filename
-//       ? `/uploads/users/${req.files.avatar[0].filename}`
-//       : null;
-//     // ✅ check duplicate email / phone
-//     const existingUser = await Client.findOne({
-//       where: {
-//         [Op.or]: [{ email }, { mobile: phone }],
-//         ...(id ? { id: { [Op.ne]: id } } : {}),
-//       },
-//     });
-
-//     if (existingUser) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "Email or phone already exists.",
-//       });
-//     }
-//     const existingLinkedUser = await User.findOne({ where: { email } });
-//     const user_id = existingLinkedUser ? existingLinkedUser.id : null;
-//     let client;
-//     if (id) {
-//       // ---------- UPDATE ----------
-//       client = await Client.findByPk(id);
-//       if (!client) {
-//         return res.status(404).json({ status: false, message: "Client not found." });
-//       }
-//       const updateData = {
-//         full_name,
-//         email,
-//         dob,
-//         mobile: phone,
-//         address,
-//         city,
-//         state,
-//         country,
-//         gender,
-//         postcode,
-//         created_by: clinic_id || null,
-//       };
-//       if (avatar) updateData.avatar = avatar;
-//       await client.update(updateData);
-
-//       const enquiriesUpdated = await SendEnquiry.update(
-//         { status: 1 }, // ✅ Set status to 1
-//         {
-//           where: { email: email }, // ✅ Update all records with this email
-//         }
-//       );
-
-
-
-//       // 🔹 clear old staff assignments
-//       await AssignClient.destroy({ where: { client_id: id } });
-//       // 🔹 insert new staff assignments
-//       if (assignedStaff.length > 0) {
-//         const assignRows = assignedStaff.map((staffId) => ({
-//           client_id: id,
-//           staff_id: staffId,
-//           type: type,
-//           clinic_id: clinic_id || null,
-//           created_at: new Date(),
-//           updated_at: new Date(),
-//         }));
-//         await AssignClient.bulkCreate(assignRows);
-//         // 🔹 send email notification to staff
-//         await sendAssignmentEmails(assignedStaff, client);
-//       }
-//       return res.status(200).json({
-//         status: true,
-//         message: "Client updated successfully.",
-//         client,
-//       });
-//     } else {
-
-//       // Step 1: Find user's active subscription
-//       const activeSubscription = await Subscription.findOne({
-//         where: {
-//           user_id: clinic_id,
-//           stripe_status: {
-//             [Op.or]: ["active", "complete"]
-//           }
-//         },
-//         attributes: ["id", "user_id","stripe_price"],
-//         order: [["id", "DESC"]],
-//       });
-//       if (!activeSubscription) {
-//         return res.status(400).json({
-//           status: false,
-//           message: "No active subscription found. Please subscribe to a plan.",
-//         });
-//       }
-//       // Step 2: Fetch plan details from SubscriptionPlans using stripe_price
-//       const plan = await SubscriptionPlans.findOne({
-//         where: { stripe_price_id: activeSubscription.stripe_price },
-//         attributes: ["id","title"]       
-//       });
-//       console.log(plan);
-//       console.log(activeSubscription);
-      
-      
-//       if (!plan) {
-//         return res.status(400).json({
-//           status: false,
-//           message: "Invalid subscription plan. Please contact support.",
-//         });
-//       }
-//       // Step 3: Define client limits dynamically by plan ID
-//       const STAFF_LIMITS = {
-//         1: 150,        // Plan ID 1 → 150 client
-//         2: Infinity,        // Plan ID 2 → unlimited client
-//         3: Infinity, // Plan ID 3 → unlimited client
-//         18: Infinity, // Plan ID 18 → unlimited client
-//       };
-//       const planId = plan.id;
-//       const staffLimit = STAFF_LIMITS[planId] ?? Infinity;
-//       // Step 4: Count how many staff are already created
-//       const totalStaff = await Client.count({
-//         where: {
-//           created_by: clinic_id,
-//         },
-//       });
-//       // Step 5: Enforce plan-based client limit
-//       if (staffLimit !== Infinity && totalStaff >= staffLimit) {
-//         return res.status(400).json({
-//           status: false,
-//           message: `You’ve reached your client limit for the ${plan.title} plan (${staffLimit}). Please upgrade to add more client members.`,
-//         });
-//       }
-
-//       // ---------- CREATE ----------
-//       client = await Client.create({
-//         avatar,
-//         full_name,
-//         email,
-//         dob,
-//         mobile: phone,
-//         address,
-//         city,
-//         state,
-//         country,
-//         gender,
-//         postcode,
-//         created_by: clinic_id || null,
-//         user_id: user_id || null,
-//       });
-
-//       await SendEnquiry.update(
-//         { status: 1 }, // ✅ Update this field
-//         {
-//           where: { email: client.email }, // ✅ Update all records with same email
-//         }
-//       );
-
-//       try {
-//         const transporter = nodemailer.createTransport({
-//           host: process.env.MAIL_HOST,
-//           port: 587,
-//           secure: false, // important: STARTTLS
-//           auth: {
-//             user: process.env.MAIL_USER.trim(),
-//             pass: process.env.MAIL_PASS.trim(),
-//           },
-//           tls: {
-//             rejectUnauthorized: false,
-//           },
-//         });
-//         const mailOptions = {
-//           from: process.env.MAIL_FROM,
-//           to: client.email, // fixed from just "email" to "client.email"
-//           subject: "Welcome to ServiceCue!",
-//           html: `
-//             <p>Hi ${client.full_name},</p>
-//             <p>You have been added to <strong>ServiceCue</strong> as a Client.</p>
-//             <p>Please register to access your account and complete your process:</p>
-//             <br/>
-//             <p>Thank you,<br/>ServiceCue Team</p>
-//           `,
-//         };
-
-//         await transporter.sendMail(mailOptions);
-//         console.log("Welcome email sent to:", client.email);
-//       } catch (err) {
-//         console.error("Error sending client welcome email:", err);
-//       }
-
-//       // 🔹 assign staff
-//       if (assignedStaff.length > 0) {
-//         const assignRows = assignedStaff.map((staffId) => ({
-//           client_id: client.id,
-//           staff_id: staffId,
-//             type: type,
-//           clinic_id: clinic_id || null,
-//           created_at: new Date(),
-//           updated_at: new Date(),
-//         }));
-//         await AssignClient.bulkCreate(assignRows);
-
-//         // 🔹 send email notification to staff
-//         await sendAssignmentEmails(assignedStaff, client);
-//       }
-
-//       return res.status(201).json({
-//         status: true,
-//         message: "Client added successfully.",
-//         client,
-//       });
-//     }
-//   } catch (err) {
-//     console.error("SaveOrUpdateClient Error:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error.",
-//       error: err.message,
-//     });
-//   }
-// };
 
 exports.SaveOrUpdateClient = async (req, res) => {
+
+
+
   try {
-
-
-
-
     let {
       id,
       full_name,
@@ -413,7 +152,19 @@ exports.SaveOrUpdateClient = async (req, res) => {
       postcode,
       clinic_id,
       assignedStaff,
+      visible_to_staff
     } = req.body;
+      const rawVisible = visible_to_staff;
+console.log(rawVisible, typeof rawVisible);
+
+visible_to_staff =
+  rawVisible === true ||
+  rawVisible === "true" ||
+  rawVisible === 1 ||
+  rawVisible === "1"
+    ? 1
+    : 0;
+
     // 🔹 convert "1307,1285" → [1307,1285]
     if (typeof assignedStaff === "string") {
       assignedStaff = assignedStaff
@@ -485,6 +236,7 @@ if (dob) {
         country,
         gender,
         postcode,
+        visible_to_staff,
         created_by: clinic_id || null,
       };
       if (avatar) updateData.avatar = avatar;
@@ -590,6 +342,7 @@ if (dob) {
         country,
         gender,
         postcode,
+        visible_to_staff,
         created_by: clinic_id || null,
         user_id: user_id || null,
       });
@@ -781,6 +534,7 @@ exports.clientDetails = async (req, res) => {
       gender: client.gender,
       postcode: client.postcode,
       avatar: client.avatar,
+      visible_to_staff : client.visible_to_staff ,
       assignedStaff: assignedStaff.map((s) => s.staff_id) // [1307,1285,...]
     });
   } catch (err) {

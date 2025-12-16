@@ -143,25 +143,55 @@ exports.AssignClient = async (req, res) => {
     });
 
     // Step 3: Extract just the IDs (if needed)
+    // const assignedClientIds = assignedClients.map(client => client.id);
+    // const list = await AssignClient.findAll({
+    //   where: {
+    //     staff_id: loginUserId,
+    //     client_id: {
+    //       [Op.notIn]: assignedClientIds.length > 0 ? assignedClientIds : [0],
+    //     },
+    //   },
+    //   include: [
+    //     {
+    //       model: Client,
+    //       as: "assignedClient", // make sure this alias matches your model definition
+    //       attributes: ["id", "full_name", "email", "dob", "gender", "mobile", "avatar", "user_id"],
+    //     },
+    //   ],
+    //   order: [["created_at", "DESC"]],
+    // });
+
+
     const assignedClientIds = assignedClients.map(client => client.id);
 
-    // Step 2: Get clients not in assigned list
-    const list = await AssignClient.findAll({
-      where: {
-        staff_id: loginUserId,
-        client_id: {
-          [Op.notIn]: assignedClientIds.length > 0 ? assignedClientIds : [0],
-        },
-      },
-      include: [
-        {
-          model: Client,
-          as: "assignedClient", // make sure this alias matches your model definition
-          attributes: ["id", "full_name", "email", "dob", "gender", "mobile", "avatar", "user_id"],
-        },
-      ],
-      order: [["created_at", "DESC"]],
-    });
+let list = await AssignClient.findAll({
+  where: {
+    staff_id: loginUserId,
+    client_id: {
+      [Op.notIn]: assignedClientIds.length > 0 ? assignedClientIds : [0],
+    },
+  },
+  include: [
+    {
+      model: Client,
+      as: "assignedClient",
+      attributes: ["id", "full_name", "email", "dob", "gender", "mobile", "avatar", "user_id", "visible_to_staff"],
+    },
+  ],
+  order: [["created_at", "DESC"]],
+});
+
+// Transform the list to hide mobile if visible_to_staff == 1
+list = list.map(item => {
+  const client = item.assignedClient.toJSON();
+  if (client.visible_to_staff === false) {  // false wale clients ka mobile hide
+    client.mobile = "";
+  }
+  return {
+    ...item.toJSON(),
+    assignedClient: client,
+  };
+});
 
     const formattedList = list.map(item => ({
       id: item.id,
@@ -526,6 +556,7 @@ exports.clientDetails = async (req, res) => {
         "city",
         "state",
         "country",
+        "visible_to_staff",
       ],
     });
 
@@ -536,12 +567,17 @@ exports.clientDetails = async (req, res) => {
       });
     }
 
+    const clientData = client.toJSON();
+if (clientData.visible_to_staff === false) {
+  clientData.mobile = ""; // hide mobile if not visible
+}
+
     // ✅ Step 3: Merge response
     const responseData = {
-      ...client.toJSON(),
-      notes: assigned.notes || "",
-      assign_date: assigned.get("assign_date"), // use alias ka value
-    };
+  ...clientData,
+  notes: assigned.notes || "",
+  assign_date: assigned.get("assign_date"),
+};
 
     return res.status(200).json({
       status: true,
@@ -3077,290 +3113,7 @@ exports.CompleteTreatmentPlan = async (req, res) => {
 };
 
 
-// exports.createOrUpdateTreatmentPlan = async (req, res) => {
-//   try {
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token) {
-//       return res.status(401).json({ message: "Authentication token is required." });
-//     }
 
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const loginUserId = decoded.id;
-
-//     // ✅ Handle file upload
-//     await new Promise((resolve, reject) => {
-//       uploadProfilePic(req, res, (err) => (err ? reject(err) : resolve()));
-//     });
-
-//     const {
-//       edit_id, // ✅ when editing
-//       client_id,
-//       clinic_id,
-//       goals,
-//       concerns,
-//       service_categories,
-//       products,
-//       price,
-//       additional_notes,
-//     } = req.body || {};
-
-//     if (!client_id || !clinic_id) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "Client & Clinic ID required",
-//       });
-//     }
-
-//     const front = req.files?.front ? `/uploads/clinic_images/${req.files.front[0].filename}` : null;
-//     const left = req.files?.left ? `/uploads/clinic_images/${req.files.left[0].filename}` : null;
-//     const right = req.files?.right ? `/uploads/clinic_images/${req.files.right[0].filename}` : null;
-
-//     const concernsNorm = Array.isArray(concerns) ? concerns.join(",") : concerns;
-//     const serviceCategoriesNorm = Array.isArray(service_categories)
-//       ? service_categories.join(",")
-//       : service_categories;
-
-//     const goalsArray = Array.isArray(goals)
-//       ? goals
-//       : typeof goals === "string"
-//       ? goals.split(",").map((g) => g.trim())
-//       : [];
-
-//     const productsArray = Array.isArray(products)
-//       ? products
-//       : typeof products === "string"
-//       ? products.split(",").map((p) => p.trim())
-//       : [];
-
-//     const formatDate = (date) => {
-//       if (!date) return null;
-//       return moment(date, ["DD-MM-YYYY", "MM-DD-YYYY", "YYYY-MM-DD"]).format("YYYY-MM-DD");
-//     };
-
-//     // ✅ Parse treatments array from body
-//     let treatments = [];
-//     if (typeof req.body?.treatments === "string") {
-//       try {
-//         const parsed = JSON.parse(req.body.treatments);
-//         if (Array.isArray(parsed)) treatments = parsed;
-//       } catch (e) {
-//         console.error("❌ treatments JSON parse failed:", e.message);
-//       }
-//     }
-//     Object.keys(req.body || {}).forEach((key) => {
-//       const match = key.match(/^treatments\[(\d+)\]\[(.+)\]$/);
-//       if (match) {
-//         const index = parseInt(match[1], 10);
-//         const field = match[2];
-//         if (!treatments[index]) treatments[index] = {};
-//         treatments[index][field] = req.body[key];
-//       }
-//     });
-//     if (Array.isArray(req.body?.treatments) && req.body.treatments.length) {
-//       treatments = req.body.treatments;
-//     }
-
-//     treatments = (treatments || []).filter((t) => t && t.cat_id && t.start_date && t.end_date);
-//     if (!treatments.length) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "At least one valid treatment plan is required",
-//       });
-//     }
-
-//     // -----------------------------------------------------
-//     // 💾 Step 1: Create OR Update Main Treatment
-//     // -----------------------------------------------------
-//     let mainTreatment;
-//     if (edit_id) {
-//       // ✅ Update existing treatment
-//       mainTreatment = await Treatment.findByPk(edit_id);
-//       if (!mainTreatment) {
-//         return res.status(404).json({
-//           status: false,
-//           message: "Treatment not found for editing",
-//         });
-//       }
-
-//       await mainTreatment.update({
-//         client_id,
-//         clinic_id,
-//         concerns: concernsNorm,
-//         front: front || mainTreatment.front.startsWith(process.env.BASE_PATH) ? mainTreatment.front.slice(process.env.BASE_PATH.length) : '',
-//         left: left || mainTreatment.left.startsWith(process.env.BASE_PATH) ? mainTreatment.left.slice(process.env.BASE_PATH.length) : '',
-//         right: right || mainTreatment.right.startsWith(process.env.BASE_PATH) ? mainTreatment.right.slice(process.env.BASE_PATH.length) : '',
-//         price,
-//         additional_notes,
-//         updated_by: loginUserId,
-//       });
-
-//       // ✅ Send Push Notification to client
-//       const treatment = await Treatment.findOne({
-//         where: { id: edit_id },
-//         attributes: ["id", "client_id", "created_by"],
-//       });
-
-//       if (treatment) {
-//         const clientDetails = await Client.findOne({
-//           where: { id: treatment.client_id },
-//           attributes: ["id", "user_id"],
-//         });
-
-//         if (clientDetails) {
-//           const treatmentCreator = await User.findOne({
-//             where: { id: clientDetails.user_id },
-//             attributes: ["id", "full_name", "push_token"],
-//           });
-
-//           const staffUser = await User.findOne({
-//             where: { id: treatment.created_by },
-//             attributes: ["id", "full_name"],
-//           });
-
-//           if (treatmentCreator && treatmentCreator.push_token) {
-//             const message = {
-//               token: treatmentCreator.push_token,
-//               notification: {
-//                 title: "Treatment Update",
-//                 body: `${staffUser.full_name} has updated the Treatment.`,
-//               },
-//               data: {
-//                 type: "Treatment Update",
-//                 id: edit_id.toString(),
-//                 goal_id: edit_id.toString(),
-//               },
-//             };
-//                 await Notifications.create({
-//   title: message.notification.title,
-//   user_id: treatmentCreator.id, // recipient user ID
-//   route_id: treatment.id,       // related treatment ID
-//   type: message.data.type,      // "Treatment Close"
-//   status: 0,                    // unread
-// });
-//             try {
-//               await admin.messaging().send(message);
-//             } catch (fcmError) {
-//               console.error("❌ FCM send error:", fcmError.message);
-//             }
-//           }
-//         }
-//       }
-//     } else {
-//       // ✅ Create new treatment
-//       mainTreatment = await Treatment.create({
-//         client_id,
-//         clinic_id,
-//         concerns: concernsNorm,
-//         front,
-//         left,
-//         right,
-//         price,
-//         additional_notes,
-//         created_by: loginUserId,
-//       });
-//     }
-
-//     // ✅ Link last prescription to treatment
-//     const lastPrescription = await ProductPrescriptions.findOne({
-//       order: [["id", "DESC"]],
-//     });
-
-//     if (lastPrescription) {
-//       await lastPrescription.update({
-//         treatment_id: mainTreatment.id,
-//       });
-//     }
-
-//     // -----------------------------------------------------
-//     // 💾 Step 2: Handle Treatment Plans (Edit/Delete/Create)
-//     // -----------------------------------------------------
-//     const treatmentPlanResults = [];
-
-//     if (edit_id) {
-//       // 🗑️ Delete all upcoming treatment plans
-//       const today = moment().format("YYYY-MM-DD");
-//       await TreatmentPlan.destroy({
-//         where: {
-//           treatment_id: edit_id,
-//           start_date: { [Op.gte]: today },
-//         },
-//       });
-//     }
-
-//     // 💾 Add new treatment plans
-//     for (const t of treatments) {
-//       const planData = {
-//         client_id,
-//         clinic_id,
-//         concerns: concernsNorm,
-//         service_categories: serviceCategoriesNorm,
-//         products: productsArray.join(","),
-//         cat_id: t.cat_id,
-//         start_date: formatDate(t.start_date),
-//         end_date: formatDate(t.end_date),
-//         front: front || mainTreatment.front,
-//         left: left || mainTreatment.left,
-//         right: right || mainTreatment.right,
-//         price: t.price,
-//         treatment_id: mainTreatment.id,
-//         created_by: loginUserId,
-//       };
-
-//       // Always create new plans (fresh)
-//       const treatmentPlan = await TreatmentPlan.create(planData);
-//       treatmentPlanResults.push(treatmentPlan);
-//     }
-
-//     // -----------------------------------------------------
-//     // 💾 Step 3: Save Goals
-//     // -----------------------------------------------------
-//     if (goalsArray.length) {
-//       await Goal.destroy({ where: { treatment_id: mainTreatment.id } });
-//       const goalRows = goalsArray.map((g) => ({
-//         treatment_id: mainTreatment.id,
-//         client_id,
-//         staff_id: loginUserId,
-//         name: g,
-//         status: 0,
-//       }));
-//       await Goal.bulkCreate(goalRows);
-//     }
-
-//     // -----------------------------------------------------
-//     // 💾 Step 4: Save Products
-//     // -----------------------------------------------------
-//     if (productsArray.length) {
-//       await TreatmentProducts.destroy({ where: { treatment_id: mainTreatment.id } });
-//       const productRows = productsArray.map((p) => ({
-//         treatment_id: mainTreatment.id,
-//         client_id,
-//         staff_id: loginUserId,
-//         product_id: p,
-//         status: 1,
-//       }));
-//       await TreatmentProducts.bulkCreate(productRows);
-//     }
-
-//     // -----------------------------------------------------
-//     // ✅ Final Response
-//     // -----------------------------------------------------
-//     return res.status(201).json({
-//       status: true,
-//       message: edit_id
-//         ? "Treatment updated successfully (upcoming plans replaced)"
-//         : "Treatment, plans, goals & products saved successfully",
-//       treatment_id: mainTreatment.id,
-//       plans_created: treatmentPlanResults.length,
-//     });
-//   } catch (err) {
-//     console.error("❌ Error in createOrUpdateTreatmentPlan:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error",
-//       error: process.env.NODE_ENV !== "production" ? err.message : undefined,
-//     });
-//   }
-// };
 
 
 exports.createOrUpdateTreatmentPlan = async (req, res) => {
@@ -3611,51 +3364,7 @@ exports.createOrUpdateTreatmentPlan = async (req, res) => {
       await Goal.bulkCreate(goalRows);
     }
 
-    // ---------------------------------------------------------
-    // PRODUCTS
-    // ---------------------------------------------------------
-    /*if (productsArray.length) {
-      await TreatmentProducts.destroy({
-        where: { treatment_id: mainTreatment.id },
-      });
-
-      const productRows = productsArray.map((p) => ({
-        treatment_id: mainTreatment.id,
-        client_id,
-        staff_id: loginUserId,
-        product_id: p,
-        status: 1,
-      }));
-
-      await TreatmentProducts.bulkCreate(productRows);
-
-      
-      // ---------------------------------------------------------
-      // LINK LAST PRESCRIPTION
-      // ---------------------------------------------------------
-
-      // const lastPrescription = await ProductPrescriptions.findOne({
-      //   order: [["id", "DESC"]],
-      // });    
-      // if (lastPrescriptions) {
-      //   await lastPrescription.update({ treatment_id: mainTreatment.id });
-      // }
-
-      const updatedPrescriptions = await ProductPrescriptions.update(
-        { treatment_id: mainTreatment.id },
-        {
-          where: {
-            staff_id: loginUserId,
-            client_id: client_id,
-            treatment_id: null
-          }
-        }
-      );
-
-      console.log("Updated count:", updatedPrescriptions);
-
-    }*/
-
+  
     if (productsArray.length) {
       // Delete previous treatment products
       await TreatmentProducts.destroy({

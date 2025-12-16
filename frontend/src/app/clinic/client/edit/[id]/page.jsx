@@ -41,6 +41,7 @@ const ClientCreate = () => {
     postcode: "",
     avatarUrl: "",
     assignedStaff: [],
+    visible_to_staff: false,
   });
 
   // staff dropdown state
@@ -146,6 +147,7 @@ const ClientCreate = () => {
         postcode: client.postcode ?? "",
         avatarUrl: client.avatar ?? "",
         assignedStaff: assignedStaffArray,
+        visible_to_staff: client.visible_to_staff == 1,
       });
 
       setProfilePreview(client.avatar ?? null);
@@ -180,6 +182,12 @@ const ClientCreate = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value || "" }));
+  };
+   const handleCheckboxChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      visible_to_staff: e.target.checked,
+    }));
   };
 
   // profile image change
@@ -420,6 +428,25 @@ const ClientCreate = () => {
           </div>
 
           {/* Bio */}
+
+                    {/* Visible to Staff */}
+          <div className="form-check mb-3">
+  <input
+    className="form-check-input"
+    type="checkbox"
+    id="visibleToStaff"
+    checked={!!formData.visible_to_staff} // ✅ true → checked
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        visible_to_staff: e.target.checked,
+      }))
+    }
+  />
+  <label className="form-check-label" htmlFor="visibleToStaff">
+    Visible to Staff
+  </label>
+</div>
 
 
           {/* Assign Staff */}
