@@ -2,6 +2,7 @@ require("module-alias/register");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sequelize = require("@config/config");
+const { Sequelize } = require("sequelize");
 const responseHelper = require("@helpers/ResponseHelper");
 const { validationResult } = require("express-validator");
 const { fileUploadOnServer } = require("@helpers/FileUploadHelper");
@@ -15,19 +16,26 @@ const admin = require("@config/firebase");
 const Treatment = require('@models/Treatment');
 
 function getTimesPerDay(frequencyLabel) {
-  switch (frequencyLabel) {
-    case "Morning Only (AM)":
-    case "Evening Only (PM)":
-      return 1;
-    case "Morning & Evening (AM + PM)":
-      return 2;
-    case "Every 2nd Day":
-      return 0.5; // every other day
-    case "2–3 Times Weekly":
-      return 0.4; // roughly 2.8 times per week
-    default:
-      return 1;
-  }
+switch (frequencyLabel) {
+  case "Morning Only (AM)":
+  case "Evening Only (PM)":
+    return 1;
+
+  case "Morning & Evening (AM + PM)":
+    return 2;
+
+  case "Every 2nd Day":
+    return 0.5; // every other day
+
+  case "2 Times Weekly":
+    return 2 / 7; // ≈ 0.285 per day
+
+  case "3 Times Weekly":
+    return 3 / 7; // ≈ 0.428 per day
+
+  default:
+    return 1;
+}
 }
 
 
@@ -154,40 +162,7 @@ if (category_id) {
   );
 }
 
-// const products = await Products.findAll({
-// where: {
-//   ...whereCondition,        // existing filters
-//   ...(type !== 2 && { status: 1 })   // ✅ sirf tab lagao jab type 2 nahi ho
-// },
-//   include: [
-//     {
-//       model: ProductImages,
-//       as: "images",
-//       attributes: ["id", "image_url", "alt_text", "sort_order"]
-//     },
-//     {
-//       model: ProductPrescriptions,
-//       as: "prescription",
-//       attributes: [
-//         "dosage",
-//         "when_to_use",
-//         "when_to_start",
-//         "when_to_stop",
-//         "time_option",
-//         "start_time",
-//         "end_time",
-//         "duration",
-//         "frequency",
-//         "intake_mode",
-//         "special_instraction",
-//         "timings"
-//       ],
-//       where: client_id ? { client_id } : undefined,
-//       required: false
-//     }
-//   ],
-//   order: [["id", "DESC"]]
-// });
+
 
 const products = await Products.findAll({
   where: {
@@ -446,416 +421,6 @@ exports.deleteProductImage = async (req, res) => {
 
 
 
-// exports.ProductPrescriptions = async (req, res) => {
-//   try {
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token) {
-//       return res.status(401).json({ message: "Authentication token is required." });
-//     }
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const staff_id = decoded.id;
-//     if (!staff_id) {
-//       return res.status(401).json({ message: "Invalid token payload." });
-//     }
-
-//     let {
-//       product_id,
-//       client_id,
-//       dosage,
-//       whenToUse,
-//       whenToStart,
-//       whenToStop,
-//       duration,
-//       frequency,
-//       intakeMode,
-//       timings,
-//       time_option,
-//       start_time,
-//       edit_id,
-//       special_instraction
-//     } = req.body;
-
-//     if (!product_id || !client_id) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "product_id and client_id are required.",
-//       });
-//     }
-
-//     // ✅ Parse timings if it's a string
-//     timings = typeof timings === "string" ? JSON.parse(timings) : timings;
-
-//     // ✅ Parse start_time
-//     let dbStartTime = null;
-//     let dbEndTime = null;
-//     if (start_time) {
-//       const parsedStart = moment(start_time, "DD-MM-YYYY", true);
-//       if (!parsedStart.isValid()) {
-//         console.log("❌ Invalid start_time format:", start_time);
-//         return res.status(400).json({
-//           status: false,
-//           message: "Invalid start_time format. Expected DD-MM-YYYY.",
-//         });
-//       }
-//       dbStartTime = parsedStart.format("YYYY-MM-DD"); // ✅ format for DB
-
-//       if (duration && duration.includes("Week")) {
-//         const weeks = parseInt(duration); // "2 Weeks" => 2
-//         dbEndTime = parsedStart.clone().add(weeks, "weeks").format("YYYY-MM-DD"); // DB format
-//       } else if (duration === "Ongoing Until Review") {
-//         dbEndTime = null;
-//       }
-//     }
-
-
-//    let expectedEndTime = null;
-
-// if (dbStartTime && product_id && dosage && frequency) {
-//   const product = await Products.findOne({
-//     where: { id: product_id },
-//     attributes: ["size"],
-//   });
-
-
-
-// const dosageMetaRaw = await Productmetaoption.findOne({
-//   where: { title: dosage },
-//   attributes: ["value", "title"],
-// });
-
-// const dosageMeta = dosageMetaRaw ? dosageMetaRaw.get({ plain: true }) : null;
-// if (product && product.size && dosageMeta && dosageMeta.value > 0) {
-//   const dosageValue = parseFloat(dosageMeta.value);
-//   const timesPerDay = getTimesPerDay(frequency);
-//   if (timesPerDay > 0) {
-//     const totalDays = product.size / (dosageValue * timesPerDay);
-//     const parsedStart = moment(dbStartTime, "YYYY-MM-DD");
-//     expectedEndTime = parsedStart.clone().add(totalDays, "days").format("YYYY-MM-DD");
-//   } else {
-//   }
-// }
-// }
-
-// const formatDateOnly = (date) => moment(date).format("YYYY-MM-DD");
-
-// const prescriptionData = {
-//   staff_id,
-//   product_id,
-//   client_id,
-//   dosage, // still store title
-//   when_to_use: whenToUse,
-//   when_to_start: whenToStart,
-//   when_to_stop: whenToStop,
-//   duration,
-//   frequency,
-//   intake_mode: intakeMode,
-//   timings,
-//   time_option,
-//   start_time: dbStartTime ? formatDateOnly(dbStartTime) : null,
-//   end_time: dbEndTime ? formatDateOnly(dbEndTime) : null,
-//   expected_end_time: expectedEndTime ? formatDateOnly(expectedEndTime) : null, // ✅ fix here
-//   special_instraction,
-// };
-
-//     let existingPrescription = await ProductPrescriptions.findOne({
-//       where: { product_id, client_id },
-//     });
-
-//     let prescription;
-
-//     if (existingPrescription) {
-
-//       await existingPrescription.update(prescriptionData);
-//       prescription = existingPrescription;
-
-// if(edit_id){
-//  const treatment = await Treatment.findOne({
-//       where: { id: edit_id },
-//       attributes: ["id", "client_id", "created_by"], // created_by is staff_id
-//     });
-
-//     if (!treatment) {
-//       return res.status(404).json({
-//         status: false,
-//         message: "Treatment record not found.",
-//       });
-//     }else{
-//        // ✅ 4. Get client details
-//     const clientDetails = await Client.findOne({
-//       where: { id: treatment.client_id },
-//       attributes: ["id", "user_id"],
-//     });
-
-//     // 🔒 Notification tabhi bhejna hai jab client details milti hain
-//     if (clientDetails) {
-//       // ✅ 5. Get client’s assigned user (treatment creator)
-//       const treatmentCreator = await User.findOne({
-//         where: { id: clientDetails.user_id },
-//         attributes: ["id", "full_name", "push_token"],
-//       });
-
-//       // ✅ 6. Get staff (created_by)
-//       const staffUser = await User.findOne({
-//         where: { id: treatment.created_by },
-//         attributes: ["id", "full_name"],
-//       });
-
-//       // ✅ 7. Prepare & send notification
-//       if (treatmentCreator && treatmentCreator.push_token) {
-//         const message = {
-//           token: treatmentCreator.push_token,
-//           notification: {
-//             title: "Edit Product Prescriptions",
-//             body: `${staffUser.full_name} has update the Product Prescriptions.`,
-//           },
-//           data: {
-//             type: "Edit Product Prescriptions",
-//             id: edit_id.toString(),
-//             goal_id: edit_id.toString(),
-//           },
-//         };
-
-//         try {
-//           await admin.messaging().send(message);
-//           console.log("✅ Firebase notification sent successfully");
-//         } catch (fcmError) {
-//           console.error("❌ Firebase notification error:", fcmError);
-//         }
-//       }
-//     }
-//     } 
-// }
-       
-
-   
-
-//       return res.status(200).json({
-//         status: true,
-//         message: "Prescription updated successfully.",
-//         prescription,
-//       });
-//     } else {
-//       prescription = await ProductPrescriptions.create(prescriptionData);
-//       return res.status(201).json({
-//         status: true,
-//         message: "Prescription created successfully.",
-//         prescription,
-//       });
-//     }
-
-//   } catch (err) {
-//     console.error("❌ ProductPrescriptions Error:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error.",
-//       error: err.message,
-//     });
-//   }
-// };
-
-
-// exports.ProductPrescriptions = async (req, res) => {
-//   try {
-//     // -----------------------------
-//     // 🔹 Verify JWT
-//     // -----------------------------
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token)
-//       return res
-//         .status(401)
-//         .json({ message: "Authentication token is required." });
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const staff_id = decoded.id;
-//     if (!staff_id)
-//       return res.status(401).json({ message: "Invalid token payload." });
-
-//     // -----------------------------
-//     // 🔹 Extract body fields
-//     // -----------------------------
-//     let {
-//       product_id,
-//       client_id,
-//       dosage,
-//       whenToUse,
-//       whenToStart,
-//       whenToStop,
-//       duration,
-//       frequency,
-//       intakeMode,
-//       timings,
-//       time_option,
-//       start_time,
-//       edit_id,
-//       special_instraction,
-//     } = req.body;
-
-//     if (!product_id || !client_id) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "product_id and client_id are required.",
-//       });
-//     }
-
-//     console.log(client_id);
-
-//     // -----------------------------
-//     // 🔹 Parse timings safely
-//     // -----------------------------
-//     if (typeof timings === "string") {
-//       try {
-//         timings = JSON.parse(timings);
-//       } catch {
-//         timings = [];
-//       }
-//     }
-
-//     // -----------------------------
-//     // 🔹 Parse and calculate start/end time
-//     // -----------------------------
-//     let dbStartTime = null;
-//     let dbEndTime = null;
-
-//     if (start_time) {
-//       const parsedStart = moment(start_time, "DD-MM-YYYY", true);
-//       if (!parsedStart.isValid()) {
-//         return res.status(400).json({
-//           status: false,
-//           message: "Invalid start_time format. Expected DD-MM-YYYY.",
-//         });
-//       }
-
-//       dbStartTime = parsedStart.format("YYYY-MM-DD");
-
-//       if (duration && duration.includes("Week")) {
-//         const weeks = parseInt(duration);
-//         dbEndTime = parsedStart.clone().add(weeks, "weeks").format("YYYY-MM-DD");
-//       } else if (duration === "Ongoing Until Review") {
-//         dbEndTime = null;
-//       }
-//     }
-
-//     // -----------------------------
-//     // 🔹 Prepare data object
-//     // -----------------------------
-//     const prescriptionData = {
-//       staff_id,
-//       product_id,
-//       client_id,
-//       dosage,
-//       when_to_use: whenToUse,
-//       when_to_start: whenToStart,
-//       when_to_stop: whenToStop,
-//       duration,
-//       frequency,
-//       intake_mode: intakeMode,
-//       timings,
-//       time_option,
-//       start_time: dbStartTime,
-//       end_time: dbEndTime,
-//       special_instraction,
-//     };
-
-//     // -----------------------------
-//     // 🔹 Fetch existing record
-//     // -----------------------------
-//     const existingPrescription = await ProductPrescriptions.findOne({
-//       where: { product_id, client_id },
-//       raw: true,
-//     });
-
-//     // -----------------------------
-//     // 🧠 If existing record found, compare fields
-//     // -----------------------------
-//     if (existingPrescription) {
-//       const keysToCompare = [
-//         "dosage",
-//         "when_to_use",
-//         "when_to_start",
-//         "when_to_stop",
-//         "duration",
-//         "frequency",
-//         "intake_mode",
-//         "timings",
-//         "time_option",
-//         "start_time",
-//         "end_time",
-//         "special_instraction",
-//       ];
-
-//       const normalizeValue = (val) => {
-//         if (val === null || val === undefined) return null;
-//         if (typeof val === "string") {
-//           try {
-//             const parsed = JSON.parse(val);
-//             return parsed;
-//           } catch {
-//             return val.trim();
-//           }
-//         }
-//         return val;
-//       };
-
-//       let hasChanges = false;
-
-//       for (const key of keysToCompare) {
-//         const oldVal = normalizeValue(existingPrescription[key]);
-//         const newVal = normalizeValue(prescriptionData[key]);
-
-//         if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
-//           hasChanges = true;
-//           console.log(`⚠ Change detected in "${key}":`, oldVal, "→", newVal);
-//           break;
-//         }
-//       }
-
-//       // -----------------------------
-//       // 🚫 No changes detected
-//       // -----------------------------
-//       if (!hasChanges) {
-//         return res.status(200).json({
-//           status: true,
-//           message: "No changes detected. Prescription remains unchanged.",
-//           prescription: existingPrescription,
-//         });
-//       }
-
-//       // -----------------------------
-//       // ✅ Changes found → create NEW entry
-//       // -----------------------------
-//       const newPrescription = await ProductPrescriptions.create(prescriptionData);
-
-//       // 🔔 Send notification
-//       await sendPrescriptionEditNotification(edit_id, staff_id);
-
-//       return res.status(201).json({
-//         status: true,
-//         message: "Changes detected. New prescription version created successfully.",
-//         prescription: newPrescription,
-//       });
-//     }
-
-//     // -----------------------------
-//     // 🆕 No existing record → create new
-//     // -----------------------------
-//     const newPrescription = await ProductPrescriptions.create(prescriptionData);
-
-//     return res.status(201).json({
-//       status: true,
-//       message: "Prescription created successfully.",
-//       prescription: newPrescription,
-//     });
-
-//   } catch (err) {
-//     console.error("❌ ProductPrescriptions Error:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error.",
-//       error: err.message,
-//     });
-//   }
-// };
 
 // -----------------------------
 // 🔔 Helper function: Notification
@@ -909,544 +474,7 @@ async function sendPrescriptionEditNotification(edit_id, staff_id) {
 }
 
 
-// exports.treatmentProducts = async (req, res) => {
-//   try {
-//     // 🔐 Token validation
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token) {
-//       return res.status(401).json({ message: "Authentication token is required." });
-//     }
 
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const client_id = decoded.id;
-
-//     const { date, treatment_id } = req.body;
-
-//     // ✅ Base where condition for Products
-//     const whereCondition = {};
-
-//     // 🧠 ProductPrescriptions se product_ids nikalna
-//     let clientProductIds = [];
-//     if (client_id) {
-//       const presWhere = { client_id };
-
-//       // 👇 Date filter
-//       if (date) {
-//         presWhere.start_time = { [Op.lte]: date };
-//         presWhere.end_time = { [Op.gte]: date };
-//       }
-
-//       // 👇 treatment_id filter
-//       if (treatment_id) {
-//         presWhere.treatment_id = Array.isArray(treatment_id)
-//           ? { [Op.in]: treatment_id }
-//           : treatment_id;
-//       }
-
-//       const prescriptions = await ProductPrescriptions.findAll({
-//         where: presWhere,
-//         attributes: ["product_id"],
-//         raw: true,
-//       });
-
-//       clientProductIds = prescriptions.map((p) => p.product_id);
-
-//       if (clientProductIds.length > 0) {
-//         whereCondition.id = { [Op.in]: clientProductIds };
-//       } else {
-//         return res.status(200).json({
-//           status: true,
-//           message: "No products found for this client",
-//           data: [],
-//         });
-//       }
-//     }
-
-//     // 🛍️ Products fetch karo
-//     const products = await Products.findAll({
-//       where: whereCondition,
-//       include: [
-//         {
-//           model: ProductImages,
-//           as: "images",
-//           attributes: ["id", "image_url", "alt_text", "sort_order"],
-//         },
-//         {
-//           model: ProductPrescriptions,
-//           as: "prescription",
-//           attributes: [
-//             "dosage",
-//             "when_to_use",
-//             "when_to_start",
-//             "when_to_stop",
-//             "time_option",
-//             "start_time",
-//             "end_time",
-//             "duration",
-//             "frequency",
-//             "intake_mode",
-//             "special_instraction",
-//             "timings",
-//           ],
-//           where: {
-//             client_id,
-//             ...(date && {
-//               start_time: { [Op.lte]: date },
-//               end_time: { [Op.gte]: date },
-//             }),
-//             ...(treatment_id && {
-//               treatment_id: Array.isArray(treatment_id)
-//                 ? { [Op.in]: treatment_id }
-//                 : treatment_id,
-//             }),
-//           },
-//           required: false,
-//         },
-//       ],
-//       order: [["id", "DESC"]],
-//     });
-
-//     // 🧾 Format Products
-//     const formatted = await Promise.all(
-//       products.map(async (p) => {
-//         const prod = p.toJSON();
-
-//         // 🏥 Clinic name & address from User model
-//         if (prod.clinic_id) {
-//           const clinicRecord = await User.findOne({
-//             where: { id: prod.clinic_id },
-//             attributes: ["id", "clinic_name", "address"],
-//             raw: true,
-//           });
-
-//           prod.clinic_name = clinicRecord ? clinicRecord.clinic_name : null;
-//           prod.clinic_address = clinicRecord ? clinicRecord.address : null;
-//         } else {
-//           prod.clinic_name = null;
-//           prod.clinic_address = null;
-//         }
-
-//         // 📦 Categories
-//         const categoryIds = Array.isArray(prod.service_categories)
-//           ? prod.service_categories
-//           : JSON.parse(prod.service_categories || "[]");
-//         const treatmentIds = Array.isArray(prod.treatments)
-//           ? prod.treatments
-//           : JSON.parse(prod.treatments || "[]");
-
-//         const categories = await Category.findAll({
-//           where: { id: categoryIds },
-//           attributes: ["id", "title", "image"],
-//         });
-
-//         const services = await Service.findAll({
-//           where: { id: treatmentIds },
-//           attributes: ["id", "name"],
-//         });
-
-//         // 🧪 Dosage list
-//         const typeRecord = await ProductMeta.findOne({
-//           where: { title: prod.type },
-//           attributes: ["id"],
-//         });
-
-//         const metaOptions = await Productmetaoption.findAll({
-//           where: { meta_id: typeRecord?.id },
-//           attributes: ["id", "title"],
-//         });
-
-//         prod.service_categories = categories;
-//         prod.treatments = services;
-//         prod.dosagelist = metaOptions;
-
-//         // 💊 Prescription override
-//         if (prod.prescription) {
-//           const pres = prod.prescription;
-//           prod.dosage = pres.dosage;
-//           prod.frequency = pres.frequency;
-//           prod.intake_mode = pres.intake_mode;
-//           prod.special_instraction = pres.special_instraction;
-//           prod.when_to_use = pres.when_to_use;
-//           prod.when_to_start = pres.when_to_start;
-//           prod.when_to_stop = pres.when_to_stop;
-//           prod.duration = pres.duration;
-//           prod.start_time = pres.start_time;
-//           prod.end_time = pres.end_time;
-//         }
-
-//         prod.status = 0;
-//         delete prod.prescription;
-//         return prod;
-//       })
-//     );
-
-//     return res.status(200).json({
-//       status: true,
-//       message: "Product list fetched successfully",
-//       data: formatted,
-//     });
-//   } catch (err) {
-//     console.error("Get Products Error:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error",
-//       error: process.env.NODE_ENV !== "production" ? err.message : undefined,
-//     });
-//   }
-// };
-
-
-// exports.treatmentProducts = async (req, res) => {
-//   try {
-//     // 🔐 Validate Token
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token) {
-//       return res.status(401).json({
-//         status: false,
-//         message: "Authentication token is required.",
-//       });
-//     }
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const user_id = decoded.id;
-
-
-//     let { date, treatment_id } = req.body;
-
-//     // ✅ Format and validate date
-//     let formattedDate = null;
-//     if (date) {
-//       const parsed = moment(date, "DD-MM-YYYY", true);
-//       if (!parsed.isValid()) {
-//         return res.status(400).json({
-//           status: false,
-//           message: "Invalid date format. Expected DD-MM-YYYY.",
-//         });
-//       }
-//       formattedDate = parsed.format("YYYY-MM-DD"); // ✅ for SQL
-//     }
-//     const client = await Client.findOne({
-//   where: { user_id: user_id }, // the user_id you have
-//   attributes: ["id"],          // only select the id
-// });
-//     // ✅ For single client, just use user_id
-//     const client_id = client.id;
-//     // 🧠 Build prescription filter
-//     const presWhere = { client_id }; // ✅ equality for single client
-//     if (formattedDate) {
-//       presWhere.start_time = { [Op.lte]: formattedDate };
-//       presWhere.end_time = { [Op.gte]: formattedDate };
-//     }
-//     if (treatment_id) {
-//       presWhere.treatment_id = Array.isArray(treatment_id)
-//         ? { [Op.in]: treatment_id }
-//         : treatment_id;
-//     }
-//     // 🔍 Get product IDs from prescriptions
-//     const prescriptions = await ProductPrescriptions.findAll({
-//       where: presWhere,
-//       attributes: ["product_id"],
-//       raw: true,
-//     });
-
-//     const clientProductIds = prescriptions.map((p) => p.product_id);
-//     if (!clientProductIds.length) {
-//       return res.status(200).json({
-//         status: true,
-//         message: "No products found for this client/date range.",
-//         data: [],
-//       });
-//     }
-//     // 🛍️ Fetch products with relations
-//     const products = await Products.findAll({
-//       where: { id: { [Op.in]: clientProductIds } },
-//       include: [
-//         {
-//           model: ProductImages,
-//           as: "images",
-//           attributes: ["id", "image_url", "alt_text", "sort_order"],
-//         },
-//         {
-//           model: ProductPrescriptions,
-//           as: "prescription",
-//           attributes: [
-//             "dosage",
-//             "when_to_use",
-//             "when_to_start",
-//             "when_to_stop",
-//             "time_option",
-//             "start_time",
-//             "end_time",
-//             "duration",
-//             "frequency",
-//             "intake_mode",
-//             "special_instraction",
-//             "treatment_id",
-//             "timings",
-//           ],
-//           where: {
-//             client_id, // ✅ single client
-//             ...(formattedDate && {
-//               start_time: { [Op.lte]: formattedDate },
-//               end_time: { [Op.gte]: formattedDate },
-//             }),
-//             ...(treatment_id && {
-//               treatment_id: Array.isArray(treatment_id)
-//                 ? { [Op.in]: treatment_id }
-//                 : treatment_id,
-//             }),
-//           },
-//           required: false,
-//         },
-//       ],
-//       order: [["id", "DESC"]],
-//     });
-
-//     // 🧾 Format response
-//     const formatted = await Promise.all(
-//       products.map(async (product) => {
-//         const prod = product.toJSON();
-
-//         // 🏥 Clinic Info
-//         if (prod.clinic_id) {
-//           const clinic = await User.findOne({
-//             where: { id: prod.clinic_id },
-//             attributes: ["id", "clinic_name", "address"],
-//             raw: true,
-//           });
-//           prod.clinic_name = clinic?.clinic_name || null;
-//           prod.clinic_address = clinic?.address || null;
-//         } else {
-//           prod.clinic_name = null;
-//           prod.clinic_address = null;
-//         }
-
-//         // 🏷️ Parse Categories & Treatments
-//         const categoryIds = Array.isArray(prod.service_categories)
-//           ? prod.service_categories
-//           : JSON.parse(prod.service_categories || "[]");
-
-//         const treatmentIds = Array.isArray(prod.treatments)
-//           ? prod.treatments
-//           : JSON.parse(prod.treatments || "[]");
-
-//         const [categories, services] = await Promise.all([
-//           Category.findAll({ where: { id: categoryIds }, attributes: ["id", "title", "image"] }),
-//           Service.findAll({ where: { id: treatmentIds }, attributes: ["id", "name"] }),
-//         ]);
-
-//         prod.service_categories = categories;
-//         prod.treatments = services;
-
-//         // 💊 Get Dosage Options
-//         const typeRecord = await ProductMeta.findOne({
-//           where: { title: prod.type },
-//           attributes: ["id"],
-//           raw: true,
-//         });
-
-//         const metaOptions = typeRecord
-//           ? await Productmetaoption.findAll({
-//               where: { meta_id: typeRecord.id },
-//               attributes: ["id", "title"],
-//               raw: true,
-//             })
-//           : [];
-
-//         prod.dosagelist = metaOptions;
-
-//         // 💊 Merge prescription data
-//         if (prod.prescription) {
-//           Object.assign(prod, {
-//             dosage: prod.prescription.dosage,
-//             frequency: prod.prescription.frequency,
-//             intake_mode: prod.prescription.intake_mode,
-//             special_instraction: prod.prescription.special_instraction,
-//             when_to_use: prod.prescription.when_to_use,
-//             when_to_start: prod.prescription.when_to_start,
-//             when_to_stop: prod.prescription.when_to_stop,
-//             duration: prod.prescription.duration,
-//             start_time: prod.prescription.start_time,
-//             end_time: prod.prescription.end_time,
-//             treatment_id: prod.prescription.treatment_id,
-//           });
-//         }
-
-//         // 📆 Check if product is used in history for given date
-//         if (formattedDate && prod.id && prod.treatment_id) {
-//           const existingHistory = await TreatmentProductsHistory.findOne({
-//             where: {
-//               product_id: prod.id,
-//               treatment_id: prod.treatment_id,
-//               date: formattedDate, // ✅ simple equality for DATE column
-//             },
-//             raw: true,
-//           });
-//           prod.status = existingHistory ? 1 : 0;
-//         }
-
-//         return prod;
-//       })
-//     );
-
-//     return res.status(200).json({
-//       status: true,
-//       message: "Product list fetched successfully.",
-//       data: formatted,
-//     });
-//   } catch (err) {
-//     console.error("❌ Get Products Error:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error.",
-//       error: process.env.NODE_ENV !== "production" ? err.message : undefined,
-//     });
-//   }
-// };
-
-// exports.treatmentProducts = async (req, res) => {
-//   try {
-//     // 🔐 Validate Token
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token) {
-//       return res.status(401).json({ status: false, message: "Authentication token is required." });
-//     }
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const user_id = decoded.id;
-
-//     let { date, treatment_id } = req.body;
-
-//     // ✅ Format and validate date
-//     let formattedDate = null;
-//     if (date) {
-//       const parsed = moment(date, "DD-MM-YYYY", true);
-//       if (!parsed.isValid()) {
-//         return res.status(400).json({ status: false, message: "Invalid date format. Expected DD-MM-YYYY." });
-//       }
-//       formattedDate = parsed.format("YYYY-MM-DD");
-//     }
-
-
-//     // 🧩 Find client by user_id
-//     const client = await Client.findOne({ where: { user_id }, attributes: ["id"] });
-//     if (!client) return res.status(404).json({ status: false, message: "Client not found." });
-//     const client_id = client.id;
-
-
-
-
-//     // 🧩 Find active treatments for this client (status = 1)
-//     const activeTreatments = await Treatment.findAll({
-//       where: { client_id, status: 1 },
-//       attributes: ["id"],
-//       raw: true,
-//     });
-
-//     const activeTreatmentIds = activeTreatments.map((t) => t.id);
-//     if (!activeTreatmentIds.length) {
-//       return res.status(200).json({ status: true, message: "No active treatments found.", data: [] });
-//     }
-
-//     // 🧩 Build prescription filter
-//     const presWhere = {
-//       client_id,
-//       treatment_id: { [Op.in]: activeTreatmentIds }, // only active treatments
-//       ...(formattedDate && { start_time: { [Op.lte]: formattedDate }, end_time: { [Op.gte]: formattedDate } }),
-//       ...(treatment_id && { treatment_id: Array.isArray(treatment_id) ? { [Op.in]: treatment_id } : treatment_id }),
-//     };
-
-//     // 🔍 Get product IDs from ProductPrescriptions
-//     const prescriptions = await ProductPrescriptions.findAll({ where: presWhere, attributes: ["product_id", "treatment_id"], raw: true });
-//     const clientProductIds = prescriptions.map((p) => p.product_id);
-//     if (!clientProductIds.length) {
-//       return res.status(200).json({ status: true, message: "No prescribed products found.", data: [] });
-//     }
-
-//     // 🛍️ Fetch products
-//     const products = await Products.findAll({
-//       where: { id: { [Op.in]: clientProductIds }, status: 1 },
-//       include: [
-//         { model: ProductImages, as: "images", attributes: ["id", "image_url", "alt_text", "sort_order"] },
-//         { model: ProductPrescriptions, as: "prescription", where: presWhere, required: false },
-//       ],
-//       order: [["id", "DESC"]],
-//     });
-
-//     // 🧾 Format products
-//     const formatted = await Promise.all(
-//       products.map(async (product) => {
-//         const prod = product.toJSON();
-
-//         // 🏥 Clinic info
-//         if (prod.clinic_id) {
-//           const clinic = await User.findOne({ where: { id: prod.clinic_id }, attributes: ["clinic_name", "address"], raw: true });
-//           prod.clinic_name = clinic?.clinic_name || null;
-//           prod.clinic_address = clinic?.address || null;
-//         }
-
-//         // 🏷️ Parse category & treatment arrays
-//         const categoryIds = Array.isArray(prod.service_categories) ? prod.service_categories : JSON.parse(prod.service_categories || "[]");
-//         const treatmentIds = Array.isArray(prod.treatments) ? prod.treatments : JSON.parse(prod.treatments || "[]");
-
-//         const [categories, services] = await Promise.all([
-//           Category.findAll({ where: { id: categoryIds }, attributes: ["id", "title", "image"] }),
-//           Service.findAll({ where: { id: treatmentIds }, attributes: ["id", "name"] }),
-//         ]);
-
-//         prod.service_categories = categories;
-//         prod.treatments = services;
-
-//         // 💊 Get Dosage Options
-//         const typeRecord = await ProductMeta.findOne({ where: { title: prod.type }, attributes: ["id"], raw: true });
-//         prod.dosagelist = typeRecord
-//           ? await Productmetaoption.findAll({ where: { meta_id: typeRecord.id }, attributes: ["id", "title"], raw: true })
-//           : [];
-
-//         // 💊 Merge prescription info
-//         if (prod.prescription) {
-//           Object.assign(prod, {
-//             dosage: prod.prescription.dosage,
-//             frequency: prod.prescription.frequency,
-//             intake_mode: prod.prescription.intake_mode,
-//             special_instraction: prod.prescription.special_instraction,
-//             when_to_use: prod.prescription.when_to_use,
-//             when_to_start: prod.prescription.when_to_start,
-//             when_to_stop: prod.prescription.when_to_stop,
-//             duration: prod.prescription.duration,
-//             start_time: prod.prescription.start_time,
-//             end_time: prod.prescription.end_time,
-//             treatment_id: prod.prescription.treatment_id,
-//           });
-//         }
-
-//         // 📆 Check treatment product history for date
-//         if (formattedDate && prod.id && prod.treatment_id) {
-//           const existingHistory = await TreatmentProductsHistory.findOne({
-//             where: { product_id: prod.id, treatment_id: prod.treatment_id, date: formattedDate },
-//             raw: true,
-//           });
-//           prod.status = existingHistory ? 1 : 0;
-//         }
-
-//         return prod;
-//       })
-//     );
-
-//     return res.status(200).json({
-//       status: true,
-//       message: "Active treatment products fetched successfully.",
-//       data: formatted.filter((p) => p !== null),
-//     });
-//   } catch (err) {
-//     console.error("❌ treatmentProducts Error:", err);
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal server error.",
-//       error: process.env.NODE_ENV !== "production" ? err.message : undefined,
-//     });
-//   }
-// };
 
 exports.treatmentProducts = async (req, res) => {
   try {
@@ -1690,9 +718,203 @@ exports.treatmentProducts = async (req, res) => {
 
 
 
+// exports.ProductPrescriptions = async (req, res) => {
+//   try {
+//     // ✅ Verify token
+//     const token = req.header("Authorization")?.replace("Bearer ", "");
+//     if (!token) {
+//       return res.status(401).json({ message: "Authentication token is required." });
+//     }
+
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
+//     const staff_id = decoded.id;
+//     if (!staff_id) {
+//       return res.status(401).json({ message: "Invalid token payload." });
+//     }
+//     // ✅ Extract data from request
+//     let {
+//       product_id,
+//       client_id,
+//       dosage,
+//       whenToUse,
+//       whenToStart,
+//       whenToStop,
+//       duration,
+//       frequency,
+//       intakeMode,
+//       timings,
+//       time_option,
+//       start_time,
+//       edit_id,
+//       treatmentId, // ✅ optional (frontend may still send this)
+//       special_instraction,
+//     } = req.body;
+//     let doseValueToSave = null;
+//     edit_id = edit_id || treatmentId;
+//     if (!product_id || !client_id) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "product_id and client_id are required.",
+//       });
+//     }
+//     timings = typeof timings === "string" ? JSON.parse(timings) : timings;
+//     let dbStartTime = null;
+//     let dbEndTime = null;
+//     if (start_time) {
+//       const parsedStart = moment(start_time, "DD-MM-YYYY", true);
+//       if (!parsedStart.isValid()) {
+//         console.log("❌ Invalid start_time format:", start_time);
+//         return res.status(400).json({
+//           status: false,
+//           message: "Invalid start_time format. Expected DD-MM-YYYY.",
+//         });
+//       }
+//       dbStartTime = parsedStart.format("YYYY-MM-DD");
+//       if (duration && duration.includes("Week")) {
+//         const weeks = parseInt(duration);
+//         dbEndTime = parsedStart.clone().add(weeks, "weeks").format("YYYY-MM-DD");
+//       } else if (duration === "Ongoing Until Review") {
+//         dbEndTime = parsedStart.clone().add(10, "years").format("YYYY-MM-DD");
+//       }
+//     }
+//     // ✅ Calculate expected_end_time & expected_days
+//     let expectedEndTime = null;
+//     let expectedDays = null;
+//     if (dbStartTime && product_id && dosage && frequency) {
+//       const product = await Products.findOne({
+//         where: { id: product_id },
+//         attributes: ["size"],
+//       });
+//       const dosageMetaRaw = await Productmetaoption.findOne({
+//         where: { title: dosage },
+//         attributes: ["value", "title"],
+//       });
+//       const dosageMeta = dosageMetaRaw ? dosageMetaRaw.get({ plain: true }) : null;
+//       if (product && product.size && dosageMeta && dosageMeta.value > 0) {
+//         const dosageValue = parseFloat(dosageMeta.value);
+//         doseValueToSave = dosageValue;
+//         const timesPerDay = getTimesPerDay(frequency);
+//         if (timesPerDay > 0) {
+//           expectedDays = product.size / (dosageValue * timesPerDay);
+//           const parsedStart = moment(dbStartTime, "YYYY-MM-DD");
+//           expectedEndTime = parsedStart.clone().add(expectedDays, "days").format("YYYY-MM-DD");
+//         }
+//       }
+//     }
+//     const formatDateOnly = (date) => (date ? moment(date).format("YYYY-MM-DD") : null);
+//     const prescriptionData = {
+//       staff_id,
+//       product_id,
+//       client_id,
+//       dosage,
+//       dose_value: doseValueToSave,
+//       when_to_use: whenToUse,
+//       when_to_start: whenToStart,
+//       when_to_stop: whenToStop,
+//       duration,
+//       frequency,
+//       intake_mode: intakeMode,
+//       timings,
+//       time_option,
+//       start_time: formatDateOnly(dbStartTime),
+//       end_time: formatDateOnly(dbEndTime),
+//       expected_end_time: formatDateOnly(expectedEndTime),
+//       expected_days: expectedDays ? parseFloat(expectedDays.toFixed(2)) : null, // ✅ store total days
+//       special_instraction,
+//     };
+
+//     // ✅ Check if existing record exists
+//     let existingPrescription = await ProductPrescriptions.findOne({
+//       where: { product_id, client_id },
+//     });
+
+//     let prescription;
+
+//     if (existingPrescription) {
+//       await existingPrescription.update(prescriptionData);
+//       prescription = existingPrescription;
+
+//       // ✅ Send notification only if edit_id provided
+//       if (edit_id) {
+//         const treatment = await Treatment.findOne({
+//           where: { id: edit_id },
+//           attributes: ["id", "client_id", "created_by"],
+//         });
+
+//         if (!treatment) {
+//           return res.status(404).json({
+//             status: false,
+//             message: "Treatment record not found.",
+//           });
+//         } else {
+//           const clientDetails = await Client.findOne({
+//             where: { id: treatment.client_id },
+//             attributes: ["id", "user_id"],
+//           });
+
+//           if (clientDetails) {
+//             const treatmentCreator = await User.findOne({
+//               where: { id: clientDetails.user_id },
+//               attributes: ["id", "full_name", "push_token"],
+//             });
+
+//             const staffUser = await User.findOne({
+//               where: { id: treatment.created_by },
+//               attributes: ["id", "full_name"],
+//             });
+
+//             if (treatmentCreator && treatmentCreator.push_token) {
+//               const message = {
+//                 token: treatmentCreator.push_token,
+//                 notification: {
+//                   title: "Edit Product Prescriptions",
+//                   body: `${staffUser.full_name} has updated the Product Prescriptions.`,
+//                 },
+//                 data: {
+//                   type: "Edit Product Prescriptions",
+//                   id: edit_id.toString(),
+//                   goal_id: edit_id.toString(),
+//                 },
+//               };
+
+//               try {
+//                 await admin.messaging().send(message);
+//                 console.log("✅ Firebase notification sent successfully");
+//               } catch (fcmError) {
+//                 console.error("❌ Firebase notification error:", fcmError);
+//               }
+//             }
+//           }
+//         }
+//       }
+
+//       return res.status(200).json({
+//         status: true,
+//         message: "Prescription updated successfully.",
+//         prescription,
+//       });
+//     } else {
+//       prescription = await ProductPrescriptions.create(prescriptionData);
+//       return res.status(201).json({
+//         status: true,
+//         message: "Prescription created successfully.",
+//         prescription,
+//       });
+//     }
+//   } catch (err) {
+//     console.error("❌ ProductPrescriptions Error:", err);
+//     return res.status(500).json({
+//       status: false,
+//       message: "Internal server error.",
+//       error: err.message,
+//     });
+//   }
+// };
+
+
 exports.ProductPrescriptions = async (req, res) => {
   try {
-    // ✅ Verify token
+    // 🔐 AUTH
     const token = req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
       return res.status(401).json({ message: "Authentication token is required." });
@@ -1704,191 +926,177 @@ exports.ProductPrescriptions = async (req, res) => {
       return res.status(401).json({ message: "Invalid token payload." });
     }
 
-    // ✅ Extract data from request
+    // 📥 REQUEST DATA
     let {
       product_id,
       client_id,
       dosage,
-      whenToUse,
-      whenToStart,
-      whenToStop,
-      duration,
       frequency,
       intakeMode,
       timings,
       time_option,
       start_time,
       edit_id,
-      treatmentId, // ✅ optional (frontend may still send this)
+      treatmentId,
       special_instraction,
     } = req.body;
 
-    // ✅ fallback for treatmentId
-    edit_id = edit_id || treatmentId;
+    const treatment_id = edit_id || treatmentId;
 
-    if (!product_id || !client_id) {
+    if (!product_id || !client_id || !dosage || !frequency || !treatment_id) {
       return res.status(400).json({
         status: false,
-        message: "product_id and client_id are required.",
+        message:
+          "product_id, client_id, dosage, frequency and treatment_id are required.",
       });
     }
 
-    // ✅ Parse timings if it's a string
     timings = typeof timings === "string" ? JSON.parse(timings) : timings;
 
-    // ✅ Parse start_time
-    let dbStartTime = null;
-    let dbEndTime = null;
+    // 📦 PRODUCT SIZE
+    const product = await Products.findOne({
+      where: { id: product_id },
+      attributes: ["size"],
+      raw: true,
+    });
+
+    if (!product || !product.size) {
+      return res.status(400).json({
+        status: false,
+        message: "Product size not found.",
+      });
+    }
+
+    const totalSize = parseFloat(product.size);
+
+    // 💊 NEW DOSE VALUE (ALWAYS FROM META)
+    const dosageMeta = await Productmetaoption.findOne({
+      where: { title: dosage },
+      attributes: ["value"],
+      raw: true,
+    });
+
+    if (!dosageMeta || dosageMeta.value == null) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid dosage selected. Dose value not found.",
+      });
+    }
+
+    const newDoseValue = parseFloat(dosageMeta.value);
+    if (newDoseValue <= 0) {
+      return res.status(400).json({
+        status: false,
+        message: "Dose value must be greater than zero.",
+      });
+    }
+
+    // ⏰ TIMES PER DAY
+    const timesPerDay = getTimesPerDay(frequency);
+    if (!timesPerDay || timesPerDay <= 0) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid frequency.",
+      });
+    }
+
+    // 📜 EXISTING PRESCRIPTION (OLD DOSE)
+    const existingPrescription = await ProductPrescriptions.findOne({
+      where: { product_id, client_id },
+      attributes: ["dose_value", "start_time"],
+      raw: true,
+    });
+
+    const oldDoseValue = existingPrescription?.dose_value
+      ? parseFloat(existingPrescription.dose_value)
+      : newDoseValue;
+
+    // 📊 TOTAL DOSES TAKEN (TREATMENT_ID BASED)
+    const totalDoseCount = await TreatmentProductsHistory.count({
+      where: {
+        product_id,
+        treatment_id, // ✅ FIXED
+      },
+    });
+
+    // 🧮 CONSUMED QUANTITY (OLD DOSE)
+    const consumedQuantity = totalDoseCount * oldDoseValue;
+
+    // 🧮 REMAINING QUANTITY
+    let remainingQuantity = totalSize - consumedQuantity;
+    if (remainingQuantity < 0) remainingQuantity = 0;
+
+    // 🧮 EXPECTED DAYS (NEW DOSE)
+    let expectedDays = null;
+    let expectedEndTime = null;
+
+    if (remainingQuantity > 0) {
+      expectedDays = remainingQuantity / (newDoseValue * timesPerDay);
+      expectedEndTime = moment()
+        .add(Math.ceil(expectedDays), "days")
+        .format("YYYY-MM-DD");
+    }
+
+    // 📅 START DATE
+    let dbStartTime = existingPrescription?.start_time || null;
     if (start_time) {
-      const parsedStart = moment(start_time, "DD-MM-YYYY", true);
-      if (!parsedStart.isValid()) {
-        console.log("❌ Invalid start_time format:", start_time);
+      const parsed = moment(start_time, "DD-MM-YYYY", true);
+      if (!parsed.isValid()) {
         return res.status(400).json({
           status: false,
-          message: "Invalid start_time format. Expected DD-MM-YYYY.",
+          message: "Invalid start_time format. Use DD-MM-YYYY",
         });
       }
-      dbStartTime = parsedStart.format("YYYY-MM-DD");
-
-      if (duration && duration.includes("Week")) {
-        const weeks = parseInt(duration);
-        dbEndTime = parsedStart.clone().add(weeks, "weeks").format("YYYY-MM-DD");
-
-      } else if (duration === "Ongoing Until Review") {
-        // 🔥 Store date 10 years from start_time
-        dbEndTime = parsedStart.clone().add(10, "years").format("YYYY-MM-DD");
-      }
+      dbStartTime = parsed.format("YYYY-MM-DD");
     }
 
-    // ✅ Calculate expected_end_time & expected_days
-    let expectedEndTime = null;
-    let expectedDays = null;
-
-    if (dbStartTime && product_id && dosage && frequency) {
-      const product = await Products.findOne({
-        where: { id: product_id },
-        attributes: ["size"],
-      });
-
-      const dosageMetaRaw = await Productmetaoption.findOne({
-        where: { title: dosage },
-        attributes: ["value", "title"],
-      });
-
-      const dosageMeta = dosageMetaRaw ? dosageMetaRaw.get({ plain: true }) : null;
-
-      if (product && product.size && dosageMeta && dosageMeta.value > 0) {
-        const dosageValue = parseFloat(dosageMeta.value);
-        const timesPerDay = getTimesPerDay(frequency);
-
-        if (timesPerDay > 0) {
-          expectedDays = product.size / (dosageValue * timesPerDay);
-          const parsedStart = moment(dbStartTime, "YYYY-MM-DD");
-          expectedEndTime = parsedStart.clone().add(expectedDays, "days").format("YYYY-MM-DD");
-        }
-      }
-    }
-
-    const formatDateOnly = (date) => (date ? moment(date).format("YYYY-MM-DD") : null);
-
+    // 💾 SAVE DATA
     const prescriptionData = {
       staff_id,
       product_id,
       client_id,
       dosage,
-      when_to_use: whenToUse,
-      when_to_start: whenToStart,
-      when_to_stop: whenToStop,
-      duration,
+      dose_value: newDoseValue, // ✅ ALWAYS UPDATE
       frequency,
       intake_mode: intakeMode,
       timings,
       time_option,
-      start_time: formatDateOnly(dbStartTime),
-      end_time: formatDateOnly(dbEndTime),
-      expected_end_time: formatDateOnly(expectedEndTime),
-      expected_days: expectedDays ? parseFloat(expectedDays.toFixed(2)) : null, // ✅ store total days
+      start_time: dbStartTime,
+      expected_days: expectedDays ? parseFloat(expectedDays.toFixed(2)) : null,
+      expected_end_time: expectedEndTime,
       special_instraction,
     };
-
-    // ✅ Check if existing record exists
-    let existingPrescription = await ProductPrescriptions.findOne({
-      where: { product_id, client_id },
-    });
 
     let prescription;
 
     if (existingPrescription) {
-      await existingPrescription.update(prescriptionData);
-      prescription = existingPrescription;
+      await ProductPrescriptions.update(prescriptionData, {
+        where: { product_id, client_id },
+      });
 
-      // ✅ Send notification only if edit_id provided
-      if (edit_id) {
-        const treatment = await Treatment.findOne({
-          where: { id: edit_id },
-          attributes: ["id", "client_id", "created_by"],
-        });
-
-        if (!treatment) {
-          return res.status(404).json({
-            status: false,
-            message: "Treatment record not found.",
-          });
-        } else {
-          const clientDetails = await Client.findOne({
-            where: { id: treatment.client_id },
-            attributes: ["id", "user_id"],
-          });
-
-          if (clientDetails) {
-            const treatmentCreator = await User.findOne({
-              where: { id: clientDetails.user_id },
-              attributes: ["id", "full_name", "push_token"],
-            });
-
-            const staffUser = await User.findOne({
-              where: { id: treatment.created_by },
-              attributes: ["id", "full_name"],
-            });
-
-            if (treatmentCreator && treatmentCreator.push_token) {
-              const message = {
-                token: treatmentCreator.push_token,
-                notification: {
-                  title: "Edit Product Prescriptions",
-                  body: `${staffUser.full_name} has updated the Product Prescriptions.`,
-                },
-                data: {
-                  type: "Edit Product Prescriptions",
-                  id: edit_id.toString(),
-                  goal_id: edit_id.toString(),
-                },
-              };
-
-              try {
-                await admin.messaging().send(message);
-                console.log("✅ Firebase notification sent successfully");
-              } catch (fcmError) {
-                console.error("❌ Firebase notification error:", fcmError);
-              }
-            }
-          }
-        }
-      }
-
-      return res.status(200).json({
-        status: true,
-        message: "Prescription updated successfully.",
-        prescription,
+      prescription = await ProductPrescriptions.findOne({
+        where: { product_id, client_id },
       });
     } else {
       prescription = await ProductPrescriptions.create(prescriptionData);
-      return res.status(201).json({
-        status: true,
-        message: "Prescription created successfully.",
-        prescription,
-      });
     }
+
+    return res.status(200).json({
+      status: true,
+      message: "Prescription updated successfully.",
+      calculation: {
+        treatment_id,
+        totalSize,
+        oldDoseValue,
+        newDoseValue,
+        totalDoseCount,
+        consumedQuantity,
+        remainingQuantity,
+        expected_days: expectedDays,
+        expected_end_time: expectedEndTime,
+      },
+      prescription,
+    });
   } catch (err) {
     console.error("❌ ProductPrescriptions Error:", err);
     return res.status(500).json({
@@ -1898,6 +1106,8 @@ exports.ProductPrescriptions = async (req, res) => {
     });
   }
 };
+
+
 
 
 exports.allProducts = async (req, res) => {

@@ -45,32 +45,47 @@ function formatDate(date) {
 }
 
 function shouldShowReminder(frequency, startDate, today) {
+
+  console.log("test");
   if (!frequency) return [];
 
-  // Normalize frequency string
   const freq = frequency.trim().replace(/–/g, "-");
   const reminderTimes = [];
 
   const dayDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-
-  const currentHour = today.getHours(); // 0-23
+  const currentHour = today.getHours();
 
   switch (freq) {
     case "Morning Only (AM)":
-      if (currentHour >= 6 && currentHour < 12) reminderTimes.push("Morning");
+      if (currentHour >= 6 && currentHour < 12) {
+        reminderTimes.push("Morning");
+      }
       break;
+
     case "Evening Only (PM)":
-      if (currentHour >= 12 && currentHour < 18) reminderTimes.push("Evening");
+      if (currentHour >= 12 && currentHour < 22) {
+        reminderTimes.push("Evening");
+      }
       break;
+
     case "Morning & Evening (AM + PM)":
-      if (currentHour >= 6 && currentHour < 12) reminderTimes.push("Morning");
-      if (currentHour >= 12 && currentHour < 18) reminderTimes.push("Evening");
+      if (currentHour >= 6 && currentHour < 12) {
+        reminderTimes.push("Morning");
+      }
+      if (currentHour >= 12 && currentHour < 22) {
+        reminderTimes.push("Evening");
+      }
       break;
+
     case "Every 2nd Day":
-      if (dayDiff % 2 === 0) reminderTimes.push("Morning");
+      if (dayDiff % 2 === 0 && currentHour >= 6 && currentHour < 22) {
+        reminderTimes.push("Morning");
+      }
       break;
-    case "2-3 Times Weekly":
-      if (dayDiff % 3 === 0) reminderTimes.push("Morning");
+    case "2 Times Weekly":
+    case "2 Times Weekly":
+        console.log("hello");
+        reminderTimes.push("Morning");
       break;
     default:
       console.log("No matching frequency case for:", freq);
@@ -80,19 +95,41 @@ function shouldShowReminder(frequency, startDate, today) {
 }
 
 function getTimesPerDay(frequencyLabel) {
-  switch (frequencyLabel) {
-    case "Morning Only (AM)":
-    case "Evening Only (PM)":
-      return 1;
-    case "Morning & Evening (AM + PM)":
-      return 2;
-    case "Every 2nd Day":
-      return 0.5; // every other day
-    case "2–3 Times Weekly":
-      return 0.4; // roughly 2.8 times per week
-    default:
-      return 1;
-  }
+switch (frequencyLabel) {
+  case "Morning Only (AM)":
+  case "Evening Only (PM)":
+    return 1;
+
+  case "Morning & Evening (AM + PM)":
+    return 2;
+
+  case "Every 2nd Day":
+    return 0.5; // every other day
+
+  case "2 Times Weekly":
+    return 2 / 7; // ≈ 0.285 per day
+
+  case "3 Times Weekly":
+    return 3 / 7; // ≈ 0.428 per day
+
+  default:
+    return 1;
+}
+}
+
+function getWeekRange(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+
+  const startOfWeek = new Date(d.setDate(diff));
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  return { startOfWeek, endOfWeek };
 }
 
 function calculateTotalSessions(productPrescriptions) {
@@ -2370,64 +2407,159 @@ products.forEach(p => {
     }
 
     // --- Main mapping logic (uses helper above) ---
-    const productReminders = productPrescriptions.map(p => {
-      const start = new Date(p.start_time);
-      const end = new Date(p.end_time);
-      const nowDate = new Date();
+    // const productReminders = productPrescriptions.map(p => {
+    //   const start = new Date(p.start_time);
+    //   const end = new Date(p.end_time);
+    //   const nowDate = new Date();
 
-      if (nowDate < start || nowDate > end) return null;
+    //   if (nowDate < start || nowDate > end) return null;
 
-      const productInfo = productDataMap[p.product_id] || {};
-      const times = shouldShowReminder(p.frequency || "", start, nowDate);
-      if (!times.length) return null;
+    //   const productInfo = productDataMap[p.product_id] || {};
+    //   const times = shouldShowReminder(p.frequency || "", start, nowDate);
+    //   if (!times.length) return null;
 
-      // Morning / Evening based on current hour
-      const button_text = nowDate.getHours() < 12 ? "Mark Done" : "Mark Done";
-      const button_time = nowDate.getHours() < 12 ? "Morning" : "Evening";
+    //   // Morning / Evening based on current hour
+    //   const button_text = nowDate.getHours() < 12 ? "Mark Done" : "Mark Done";
+    //   const button_time = nowDate.getHours() < 12 ? "Morning" : "Evening";
 
-      // Today's local date
-      const today = formatLocalYMD(nowDate);
+    //   // Today's local date
+    //   const today = formatLocalYMD(nowDate);
 
-      // Check if dose is already taken today
-      const alreadyTaken = productHistory.some(h => {
+    //   // Check if dose is already taken today
+    //   const alreadyTaken = productHistory.some(h => {
+    //     if (h.product_id !== p.product_id) return false;
+    //     if (h.treatment_id !== p.treatment_id) return false;
+
+    //     // status/taken normalization
+    //     const statusTaken = (typeof h.status !== "undefined") ? (Number(h.status) === 1) : !!h.taken;
+    //     if (!statusTaken) return false;
+
+    //     // Try multiple possible date fields (date OR created_at)
+    //     const histDateField = h.date ?? h.created_at ?? null;
+    //     const histYMD = histDateToYMD(histDateField);
+    //     if (!histYMD) return false;
+
+    //     const histDose = (h.dose_time || "").toString().trim().toLowerCase();
+    //     const targetDose = button_text.toLowerCase();
+
+    //     return histYMD === today && histDose === targetDose;
+    //   });
+
+    //   if (alreadyTaken) return null;
+
+    //   // Calculate completion %
+    //   const totalScheduled = productHistory.filter(h => h.product_id === p.product_id).length;
+    //   const totalTaken = productHistory.filter(h => h.product_id === p.product_id && (h.taken || Number(h.status) === 1)).length;
+    //   const is_completed = totalScheduled ? totalTaken >= totalScheduled : false;
+
+    //   return {
+    //     id: p.product_id,
+    //     product_title: productInfo.title || "Unknown Product",
+    //     product_image: productInfo.image,
+    //     dosage: p.dosage,
+    //     frequency: p.frequency,
+    //     treatment_id: p.treatment_id,
+    //     tagline: "Great skin loves consistency! Time to apply your products.",
+    //     is_completed,
+    //     button_text,
+    //     button_time,
+    //   };
+    // }).filter(Boolean);
+
+    const productReminders = productPrescriptions
+  .map(p => {
+    const start = new Date(p.start_time);
+    const end = new Date(p.end_time);
+    const nowDate = new Date();
+
+    if (nowDate < start || nowDate > end) return null;
+
+    const productInfo = productDataMap[p.product_id] || {};
+
+    // 🔔 Check reminder timing
+    const times = shouldShowReminder(p.frequency || "", start, nowDate);
+    if (!times.length) return null;
+
+    // ✅ Weekly limit logic (2 / 3 Times Weekly)
+    if (p.frequency === "2 Times Weekly" || p.frequency === "3 Times Weekly") {
+      const weeklyLimit = p.frequency === "2 Times Weekly" ? 2 : 3;
+      const { startOfWeek, endOfWeek } = getWeekRange(nowDate);
+
+      const weeklyTakenCount = productHistory.filter(h => {
         if (h.product_id !== p.product_id) return false;
         if (h.treatment_id !== p.treatment_id) return false;
 
-        // status/taken normalization
-        const statusTaken = (typeof h.status !== "undefined") ? (Number(h.status) === 1) : !!h.taken;
+        const statusTaken =
+          typeof h.status !== "undefined"
+            ? Number(h.status) === 1
+            : !!h.taken;
+
         if (!statusTaken) return false;
 
-        // Try multiple possible date fields (date OR created_at)
-        const histDateField = h.date ?? h.created_at ?? null;
-        const histYMD = histDateToYMD(histDateField);
-        if (!histYMD) return false;
+        const histDate = new Date(h.date ?? h.created_at);
+        return histDate >= startOfWeek && histDate <= endOfWeek;
+      }).length;
 
-        const histDose = (h.dose_time || "").toString().trim().toLowerCase();
-        const targetDose = button_text.toLowerCase();
+      // ❌ Weekly limit reached → hide reminder
+      if (weeklyTakenCount >= weeklyLimit) return null;
+    }
 
-        return histYMD === today && histDose === targetDose;
-      });
+    // Button info
+    const button_text = "Mark Done";
+    const button_time = nowDate.getHours() < 12 ? "Morning" : "Evening";
 
-      if (alreadyTaken) return null;
+    const today = formatLocalYMD(nowDate);
 
-      // Calculate completion %
-      const totalScheduled = productHistory.filter(h => h.product_id === p.product_id).length;
-      const totalTaken = productHistory.filter(h => h.product_id === p.product_id && (h.taken || Number(h.status) === 1)).length;
-      const is_completed = totalScheduled ? totalTaken >= totalScheduled : false;
+    // ❌ Already taken today?
+    const alreadyTaken = productHistory.some(h => {
+      if (h.product_id !== p.product_id) return false;
+      if (h.treatment_id !== p.treatment_id) return false;
 
-      return {
-        id: p.product_id,
-        product_title: productInfo.title || "Unknown Product",
-        product_image: productInfo.image,
-        dosage: p.dosage,
-        frequency: p.frequency,
-        treatment_id: p.treatment_id,
-        tagline: "Great skin loves consistency! Time to apply your products.",
-        is_completed,
-        button_text,
-        button_time,
-      };
-    }).filter(Boolean);
+      const statusTaken =
+        typeof h.status !== "undefined"
+          ? Number(h.status) === 1
+          : !!h.taken;
+
+      if (!statusTaken) return false;
+
+      const histDateField = h.date ?? h.created_at ?? null;
+      const histYMD = histDateToYMD(histDateField);
+      if (!histYMD) return false;
+
+      return histYMD === today;
+    });
+
+    if (alreadyTaken) return null;
+
+    // Completion %
+    const totalScheduled = productHistory.filter(
+      h => h.product_id === p.product_id
+    ).length;
+
+    const totalTaken = productHistory.filter(
+      h =>
+        h.product_id === p.product_id &&
+        (h.taken || Number(h.status) === 1)
+    ).length;
+
+    const is_completed = totalScheduled
+      ? totalTaken >= totalScheduled
+      : false;
+
+    return {
+      id: p.product_id,
+      product_title: productInfo.title || "Unknown Product",
+      product_image: productInfo.image,
+      dosage: p.dosage,
+      frequency: p.frequency,
+      treatment_id: p.treatment_id,
+      tagline: "Great skin loves consistency! Time to apply your products.",
+      is_completed,
+      button_text,
+      button_time
+    };
+  })
+  .filter(Boolean);
 
     // ✅ Products stats
     const totalProducts = productReminders.length;
@@ -2518,8 +2650,6 @@ products.forEach(p => {
       attributes: ["treatment_id", "product_id"],
       raw: true,
     });
-
-     console.log(clinicMap,'vijay');
 
     const productClinicMap = treatmentProducts.map(p => {
       const treatment = allTreatments.find(t => t.id === p.treatment_id);
