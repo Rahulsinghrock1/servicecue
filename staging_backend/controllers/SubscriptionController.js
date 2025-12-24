@@ -13,40 +13,6 @@ const moment = require("moment");
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-
-
-// Get subscription plans
-// exports.getPlansList = async (req, res) => {
-
-//   try {
-
-//     const token = req.header("Authorization")?.replace("Bearer ", "");
-//     if (!token) {
-//       return res.status(401).json({ message: "Authentication token is required." });
-//     }
-
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fallback_secret");
-//     const userId = decoded.id;
-//     const plans = await SubscriptionPlans.findAll();
-//     if (!plans) {
-//       return responseHelper.sendError(res, "Plans not found");
-//     }
-
-//     const returnData = {
-//       plan_list: plans,
-//     };
-
-//     return responseHelper.sendResponse(
-//       res,
-//       returnData,
-//       "Plans list fetched successfully"
-//     );
-//   } catch (error) {
-//     console.error("Profile fetch error:", error);
-//     return responseHelper.sendError(res, "Internal Server Error", 500);
-//   }
-// };
-
 exports.getPlansList = async (req, res) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
