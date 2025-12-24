@@ -15,17 +15,24 @@ const ClinicPortfolio = sequelize.define(
       onDelete: 'CASCADE', // If user/clinic is deleted, delete portfolio images
     },
 
-    image_url: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      get() {
-        const rawValue = this.getDataValue('image_url');
-        if (!rawValue) return null;
+ image_url: {
+  type: DataTypes.STRING,
+  allowNull: false,
+  get() {
+    const rawValue = this.getDataValue("image_url");
+    if (!rawValue) return null;
 
-        const basePath = process.env.NEXT_PUBLIC_APP_URL || '';
-        return `${basePath}${rawValue}`;
-      },
-    },
+    const basePath = process.env.NEXT_PUBLIC_APP_URL || "";
+
+    // Remove /uploads if stored
+    const cleanPath = rawValue.startsWith("/uploads")
+      ? rawValue.replace("/uploads", "")
+      : rawValue;
+
+    // Always serve via /files
+    return `${basePath}/files${cleanPath}`;
+  },
+},
   },
   {
     tableName: 'clinicportfolio',

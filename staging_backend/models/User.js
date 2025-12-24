@@ -39,32 +39,45 @@ const User = sequelize.define(
     gender: { type: DataTypes.STRING, allowNull: true },
     state: { type: DataTypes.STRING, allowNull: true },
     city: { type: DataTypes.STRING, allowNull: true },
+avatar: {
+  type: DataTypes.STRING,
+  allowNull: true,
+  get() {
+    const rawValue = this.getDataValue("avatar");
+    const basePath = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
 
-    avatar: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      get() {
-        const rawValue = this.getDataValue("avatar");
-        if (!rawValue) {
-          return `${process.env.APP_URL}/uploads/users/no-profile.jpg`;
-        }
-        return `${process.env.APP_URL}${rawValue}`;
-      },
-    },
+    if (!rawValue) {
+      return `${basePath}/files/users/no-profile.jpg`;
+    }
 
-    clinicLogo: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      field: "clinicLogo",
-      get() {
-        const rawValue = this.getDataValue("clinicLogo");
-        if (!rawValue) {
-          return `${process.env.APP_URL}/uploads/clinics/no-profile.jpg`;
-        }
-        return `${process.env.APP_URL}${rawValue}`;
-      },
-    },
+    // Remove /uploads prefix if stored
+    const cleanPath = rawValue.startsWith("/uploads")
+      ? rawValue.replace("/uploads", "")
+      : rawValue;
 
+    return `${basePath}/files${cleanPath}`;
+  },
+},
+clinicLogo: {
+  type: DataTypes.STRING,
+  allowNull: true,
+  field: "clinicLogo",
+  get() {
+    const rawValue = this.getDataValue("clinicLogo");
+    const basePath = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "";
+
+    if (!rawValue) {
+      return `${basePath}/files/clinics/no-profile.jpg`;
+    }
+
+    // Remove /uploads prefix if stored
+    const cleanPath = rawValue.startsWith("/uploads")
+      ? rawValue.replace("/uploads", "")
+      : rawValue;
+
+    return `${basePath}/files${cleanPath}`;
+  },
+},
     address: { type: DataTypes.STRING, allowNull: true },
     lat: { type: DataTypes.DECIMAL(10, 7), allowNull: true },
     lon: { type: DataTypes.DECIMAL(10, 7), allowNull: true },
